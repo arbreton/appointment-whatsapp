@@ -2,14 +2,14 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 exports.handler = async (event, context) => {
   const { httpMethod, body } = event;
-  
+
   // Add CORS headers
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Content-Type': 'application/json'
   };
-  
+
   if (httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers, body: '' };
   }
@@ -25,10 +25,10 @@ exports.handler = async (event, context) => {
   try {
     const data = JSON.parse(body);
     const { appointmentId, amount, customerEmail, customerName, serviceType } = data;
-    
+
     // Get site URL from environment
     const siteUrl = process.env.SITE_URL || 'https://cafe-encanta-nails.netlify.app';
-    
+
     // Create Stripe Checkout session with Apple Pay support
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card', 'apple_pay'],
@@ -46,8 +46,8 @@ exports.handler = async (event, context) => {
         },
       ],
       mode: 'payment',
-      success_url: `${siteUrl}/payment-success?session_id={CHECKOUT_SESSION_ID}&appointment_id=${appointmentId}`,
-      cancel_url: `${siteUrl}/appointment/${appointmentId}`,
+      success_url: `${siteUrl}/payment-success?session_id={CHECKOUT_SESSION_ID}&appointment_id=${String(appointmentId)}`,
+      cancel_url: `${siteUrl}/appointment/${String(appointmentId)}`,
       metadata: {
         appointmentId,
       },
@@ -58,15 +58,15 @@ exports.handler = async (event, context) => {
         }
       }
     });
-    
+
     console.log('Stripe session created:', session.id);
-    
+
     return {
       statusCode: 200,
       headers,
       body: JSON.stringify({ sessionId: session.id, url: session.url })
     };
-    
+
   } catch (error) {
     console.error('Error creating payment session:', error);
     return {
