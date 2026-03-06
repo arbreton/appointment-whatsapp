@@ -8,6 +8,7 @@ import AdminLogin from './pages/AdminLogin'
 import AdminDashboard from './pages/AdminDashboard'
 import AppointmentDetail from './pages/AppointmentDetail'
 import CustomerManagement from './pages/CustomerManagement'
+import PaymentSuccess from './pages/PaymentSuccess'
 import { customerApi } from './api'
 
 function AppContent() {
@@ -86,6 +87,7 @@ function AppContent() {
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<CustomerLogin onLogin={handleCustomerLogin} />} />
       <Route path="/admin" element={<AdminLogin onLogin={handleAdminLogin} />} />
+      <Route path="/payment-success" element={<PaymentSuccess />} />
       
       {/* Protected customer routes */}
       <Route path="/dashboard" element={

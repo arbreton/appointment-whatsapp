@@ -44,30 +44,34 @@ export default function AppointmentDetail({ customer }) {
         amountToPay = Math.min(10, appointment.amount - appointment.paidAmount)
       }
 
-      // In production, this would create a Stripe Checkout session
-      // For now, we'll simulate the payment
-      const stripe = await stripePromise
-      
-      // Simulate payment (in production, redirect to Stripe Checkout)
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      // Update appointment
-      const newPaidAmount = appointment.paidAmount + amountToPay
-      const newPaymentStatus = newPaidAmount >= appointment.amount ? 'paid' : 'partial'
-      
-      await appointmentApi.update(id, {
-        paymentStatus: newPaymentStatus,
-        paidAmount: newPaidAmount,
-        paymentOption: paymentOption
+      // Call the payment API to create a Stripe Checkout session
+      const response = await fetch('/.netlify/functions/payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          appointmentId: id,
+          amount: amountToPay,
+          customerName: appointment.customerName,
+          serviceType: appointment.serviceType
+        })
       })
 
-      alert(`¡Pago exitoso de $${amountToPay}! Gracias.`)
-      navigate('/dashboard')
+      const data = await response.json()
+
+      if (data.error) {
+        throw new Error(data.error)
+      }
+
+      // Redirect to Stripe Checkout
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        throw new Error('No se pudo crear la sesión de pago')
+      }
     } catch (err) {
+      console.error('Payment error:', err)
       setError(err.message || 'Error de pago. Por favor intenta de nuevo.')
-    } finally {
       setProcessing(false)
-      setShowPaymentModal(false)
     }
   }
 
