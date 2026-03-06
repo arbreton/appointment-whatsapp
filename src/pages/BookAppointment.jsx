@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { appointmentApi } from '../api'
+import { SERVICE_TYPES, DEPOSIT_AMOUNT } from '../constants'
 
 export default function BookAppointment({ customer }) {
   const [formData, setFormData] = useState({
@@ -15,15 +16,7 @@ export default function BookAppointment({ customer }) {
   const [error, setError] = useState('')
   const navigate = useNavigate()
 
-  const serviceTypes = [
-    { id: 'manicure', name: 'Manicure', price: 35 },
-    { id: 'pedicure', name: 'Pedicure', price: 40 },
-    { id: 'nails', name: 'Uñas (Completo)', price: 60 },
-    { id: 'manicure_pedicure', name: 'Manicure + Pedicure', price: 70 },
-    { id: 'nail_art', name: 'Arte de Uñas', price: 25 },
-    { id: 'fill_in', name: 'Relleno', price: 45 },
-    { id: 'removal', name: 'Remoción', price: 15 }
-  ]
+  const serviceTypes = SERVICE_TYPES
 
   const timeSlots = [
     '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'
@@ -59,7 +52,7 @@ export default function BookAppointment({ customer }) {
       paymentType: formData.paymentType,
       amount: amount,
       paidAmount: formData.paymentType === 'waitlist' ? 0 :
-        formData.paymentType === 'min_deposit' ? 10 : amount,
+        formData.paymentType === 'min_deposit' ? DEPOSIT_AMOUNT : amount,
       paymentStatus: formData.paymentType === 'waitlist' ? 'none' : 'pending_payment',
       status: formData.paymentType === 'waitlist' ? 'waitlist' : 'confirmed',
       notes: formData.notes
@@ -228,7 +221,7 @@ export default function BookAppointment({ customer }) {
                     className="mt-0.5 sm:mt-1"
                   />
                   <div className="ml-2 sm:ml-3">
-                    <div className="font-medium text-sm sm:text-base">Pagar Depósito Mínimo ($10)</div>
+                    <div className="font-medium text-sm sm:text-base">Pagar Depósito Mínimo (${DEPOSIT_AMOUNT})</div>
                     <div className="text-xs sm:text-sm text-gray-500">Asegura tu lugar con un depósito</div>
                   </div>
                 </label>

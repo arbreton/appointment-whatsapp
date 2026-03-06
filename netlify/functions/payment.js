@@ -37,7 +37,7 @@ exports.handler = async (event, context) => {
       line_items: [
         {
           price_data: {
-            currency: 'usd',
+            currency: 'mxn',
             product_data: {
               name: `Cita de Uñas - ${serviceType}`,
               description: `Cita para ${customerName}`

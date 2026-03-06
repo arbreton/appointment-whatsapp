@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { loadStripe } from '@stripe/stripe-js'
 import { appointmentApi } from '../api'
+import { DEPOSIT_AMOUNT } from '../constants'
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '')
 
@@ -41,7 +42,7 @@ export default function AppointmentDetail({ customer }) {
         amountToPay = appointment.amount - appointment.paidAmount
       } else {
         // Minimum deposit
-        amountToPay = Math.min(10, appointment.amount - appointment.paidAmount)
+        amountToPay = Math.min(DEPOSIT_AMOUNT, appointment.amount - appointment.paidAmount)
       }
 
       // Call the payment API to create a Stripe Checkout session
@@ -139,15 +140,14 @@ export default function AppointmentDetail({ customer }) {
             </div>
             <div className="flex justify-between py-2 sm:py-3 border-b border-pink-100 text-sm sm:text-base">
               <span className="text-gray-600">Estado</span>
-              <span className={`px-2 py-0.5 sm:py-1 rounded-full text-xs font-medium ${
-                appointment.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                appointment.status === 'waitlist' ? 'bg-yellow-100 text-yellow-800' :
-                appointment.status === 'completed' ? 'bg-pink-100 text-pink-800' :
-                'bg-gray-100 text-gray-800'
-              }`}>
+              <span className={`px-2 py-0.5 sm:py-1 rounded-full text-xs font-medium ${appointment.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                  appointment.status === 'waitlist' ? 'bg-yellow-100 text-yellow-800' :
+                    appointment.status === 'completed' ? 'bg-pink-100 text-pink-800' :
+                      'bg-gray-100 text-gray-800'
+                }`}>
                 {appointment.status === 'confirmed' ? '✓ Confirmado' :
-                 appointment.status === 'waitlist' ? '⏳ Lista de espera' :
-                 appointment.status === 'completed' ? '✨ Completado' : appointment.status}
+                  appointment.status === 'waitlist' ? '⏳ Lista de espera' :
+                    appointment.status === 'completed' ? '✨ Completado' : appointment.status}
               </span>
             </div>
             <div className="flex justify-between py-2 sm:py-3 border-b border-pink-100 text-sm sm:text-base">
@@ -207,11 +207,10 @@ export default function AppointmentDetail({ customer }) {
           <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center p-3 sm:p-4 z-50">
             <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 w-full max-w-sm shadow-2xl">
               <h2 className="text-lg sm:text-xl font-bold mb-4">💳 Opciones de Pago</h2>
-              
+
               <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
-                <label className={`flex items-center p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                  paymentOption === 'full' ? 'border-pink-400 bg-pink-50' : 'border-gray-200'
-                }`}>
+                <label className={`flex items-center p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all ${paymentOption === 'full' ? 'border-pink-400 bg-pink-50' : 'border-gray-200'
+                  }`}>
                   <input
                     type="radio"
                     name="paymentOption"
@@ -226,9 +225,8 @@ export default function AppointmentDetail({ customer }) {
                   </div>
                 </label>
 
-                <label className={`flex items-center p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                  paymentOption === 'deposit' ? 'border-pink-400 bg-pink-50' : 'border-gray-200'
-                }`}>
+                <label className={`flex items-center p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all ${paymentOption === 'deposit' ? 'border-pink-400 bg-pink-50' : 'border-gray-200'
+                  }`}>
                   <input
                     type="radio"
                     name="paymentOption"
@@ -239,7 +237,7 @@ export default function AppointmentDetail({ customer }) {
                   />
                   <div className="ml-3">
                     <p className="font-semibold text-sm sm:text-base">Depósito Mínimo</p>
-                    <p className="text-xs sm:text-sm text-gray-500">$10 (resto al terminar)</p>
+                    <p className="text-xs sm:text-sm text-gray-500">${DEPOSIT_AMOUNT} (resto al terminar)</p>
                   </div>
                 </label>
               </div>

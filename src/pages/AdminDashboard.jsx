@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { appointmentApi, customerApi } from '../api'
+import { SERVICE_TYPES, DEPOSIT_AMOUNT, PRICES } from '../constants'
 
 export default function AdminDashboard({ admin, onLogout }) {
   const [appointments, setAppointments] = useState([])
@@ -24,7 +25,7 @@ export default function AdminDashboard({ admin, onLogout }) {
     service: 'Uñas Acrílicas',
     date: '',
     time: '10:00',
-    amount: 55
+    amount: SERVICE_TYPES[0].price
   })
 
   // Customer autocomplete
@@ -315,7 +316,7 @@ export default function AdminDashboard({ admin, onLogout }) {
         service: 'Uñas Acrílicas',
         date: '',
         time: '10:00',
-        amount: 55
+        amount: SERVICE_TYPES[0].price
       })
 
       alert('¡Cita creada y notificada por WhatsApp!')
@@ -502,15 +503,16 @@ export default function AdminDashboard({ admin, onLogout }) {
             </div>
             <select
               value={newAppointment.service}
-              onChange={(e) => setNewAppointment({ ...newAppointment, service: e.target.value })}
+              onChange={(e) => setNewAppointment({
+                ...newAppointment,
+                service: e.target.value,
+                amount: PRICES[e.target.value] || 0
+              })}
               className="px-4 py-3 rounded-xl border-2 border-pink-200 focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all"
             >
-              <option value="Manicure">Manicure - $35</option>
-              <option value="Pedicure">Pedicure - $40</option>
-              <option value="Uñas Acrílicas">Uñas Acrílicas - $55</option>
-              <option value="Uñas Gel">Uñas Gel - $50</option>
-              <option value="Mani + Pedi">Mani + Pedi - $65</option>
-              <option value="Relleno">Relleno - $35</option>
+              {SERVICE_TYPES.map(s => (
+                <option key={s.id} value={s.name}>{s.name} - ${s.price}</option>
+              ))}
             </select>
             <input
               type="date"
@@ -600,8 +602,8 @@ export default function AdminDashboard({ admin, onLogout }) {
                 key={item.key}
                 onClick={() => setFilter(item.key)}
                 className={`px-4 py-2 rounded-xl font-medium capitalize transition-colors ${filter === item.key
-                    ? 'bg-pink-500 text-white shadow-lg shadow-pink-300'
-                    : 'bg-white text-gray-600 hover:bg-pink-100 border border-pink-100'
+                  ? 'bg-pink-500 text-white shadow-lg shadow-pink-300'
+                  : 'bg-white text-gray-600 hover:bg-pink-100 border border-pink-100'
                   }`}
               >
                 {item.label}
@@ -612,8 +614,8 @@ export default function AdminDashboard({ admin, onLogout }) {
             <button
               onClick={() => setViewMode('list')}
               className={`px-4 py-2 rounded-xl font-medium transition-colors ${viewMode === 'list'
-                  ? 'bg-rose-500 text-white shadow-lg shadow-rose-300'
-                  : 'bg-white text-gray-600 hover:bg-rose-100 border border-rose-100'
+                ? 'bg-rose-500 text-white shadow-lg shadow-rose-300'
+                : 'bg-white text-gray-600 hover:bg-rose-100 border border-rose-100'
                 }`}
             >
               📋 Lista
@@ -621,8 +623,8 @@ export default function AdminDashboard({ admin, onLogout }) {
             <button
               onClick={() => setViewMode('calendar')}
               className={`px-4 py-2 rounded-xl font-medium transition-colors ${viewMode === 'calendar'
-                  ? 'bg-rose-500 text-white shadow-lg shadow-rose-300'
-                  : 'bg-white text-gray-600 hover:bg-rose-100 border border-rose-100'
+                ? 'bg-rose-500 text-white shadow-lg shadow-rose-300'
+                : 'bg-white text-gray-600 hover:bg-rose-100 border border-rose-100'
                 }`}
             >
               📅 Calendario
