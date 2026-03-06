@@ -6,17 +6,17 @@ export default function AdminDashboard({ admin, onLogout }) {
   const [appointments, setAppointments] = useState([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
-  
+
   // Customer creation
   const [newCustomer, setNewCustomer] = useState({ phone: '', name: '' })
   const [creatingCustomer, setCreatingCustomer] = useState(false)
   const [createdCustomer, setCreatedCustomer] = useState(null)
-  
+
   // Link generation
   const [customerPhone, setCustomerPhone] = useState('')
   const [whatsappLink, setWhatsappLink] = useState('')
   const [showPaymentModal, setShowPaymentModal] = useState(null)
-  
+
   // New appointment from admin
   const [newAppointment, setNewAppointment] = useState({
     phone: '',
@@ -55,7 +55,7 @@ export default function AdminDashboard({ admin, onLogout }) {
       setShowSuggestions(false)
       return
     }
-    
+
     const lowerQuery = query.toLowerCase()
     const suggestions = allCustomers.filter(c => {
       if (field === 'phone') {
@@ -64,16 +64,16 @@ export default function AdminDashboard({ admin, onLogout }) {
         return c.name && c.name.toLowerCase().includes(lowerQuery)
       }
     }).slice(0, 5) // Limit to 5 suggestions
-    
+
     setCustomerSuggestions(suggestions)
     setShowSuggestions(suggestions.length > 0)
   }
 
   // Get filtered appointments based on status
   const getFilteredAppointments = () => {
-    if (filter === 'all') return appointments
+    if (filter === 'all') return appointments.filter(apt => apt.status !== 'cancelled')
     if (filter === 'pending') {
-      return appointments.filter(apt => 
+      return appointments.filter(apt =>
         (apt.status === 'waitlist' || apt.status === 'confirmed') &&
         apt.status !== 'cancelled' &&
         apt.status !== 'completed'
@@ -138,7 +138,7 @@ export default function AdminDashboard({ admin, onLogout }) {
 
   const handleCreateCustomer = async () => {
     if (!newCustomer.phone || !newCustomer.name) return
-    
+
     setCreatingCustomer(true)
     try {
       const customer = await customerApi.create(newCustomer.phone, newCustomer.name)
@@ -154,7 +154,7 @@ export default function AdminDashboard({ admin, onLogout }) {
   const updateAppointmentStatus = async (appointmentId, newStatus) => {
     try {
       await appointmentApi.update(appointmentId, { status: newStatus })
-      setAppointments(appointments.map(apt => 
+      setAppointments(appointments.map(apt =>
         apt._id === appointmentId ? { ...apt, status: newStatus } : apt
       ))
     } catch (err) {
@@ -170,19 +170,19 @@ export default function AdminDashboard({ admin, onLogout }) {
 
   const generateBookingLink = async () => {
     const siteUrl = window.location.origin
-    
+
     // Check if customer exists
     let customer = await customerApi.getByPhone(customerPhone)
-    
+
     if (!customer) {
       // Ask for name before creating
       const name = prompt('Cliente nuevo. Ingresa el nombre:')
       if (!name) return
-      
+
       // Create customer
       customer = await customerApi.create(customerPhone, name)
     }
-    
+
     // Generate link that auto-logs in and goes to booking
     const link = `${siteUrl}/login?ref=${encodeURIComponent(customerPhone)}&redirectTo=/book`
     setWhatsappLink(link)
@@ -259,7 +259,7 @@ export default function AdminDashboard({ admin, onLogout }) {
         updateData.paidAmount = paidAmount
       }
       await appointmentApi.update(appointmentId, updateData)
-      setAppointments(appointments.map(apt => 
+      setAppointments(appointments.map(apt =>
         apt._id === appointmentId ? { ...apt, ...updateData } : apt
       ))
     } catch (err) {
@@ -270,7 +270,7 @@ export default function AdminDashboard({ admin, onLogout }) {
   const updatePaymentType = async (appointmentId, paymentType) => {
     try {
       await appointmentApi.update(appointmentId, { paymentType })
-      setAppointments(appointments.map(apt => 
+      setAppointments(appointments.map(apt =>
         apt._id === appointmentId ? { ...apt, paymentType } : apt
       ))
     } catch (err) {
@@ -329,7 +329,7 @@ export default function AdminDashboard({ admin, onLogout }) {
   const handleApproveAppointment = async (appointmentId) => {
     try {
       await appointmentApi.update(appointmentId, { status: 'confirmed' })
-      setAppointments(appointments.map(apt => 
+      setAppointments(appointments.map(apt =>
         apt._id === appointmentId ? { ...apt, status: 'confirmed' } : apt
       ))
       alert('¡Cita aprobada!')
@@ -340,10 +340,10 @@ export default function AdminDashboard({ admin, onLogout }) {
 
   const handleRejectAppointment = async (appointmentId) => {
     if (!confirm('¿Estás seguro de rechazar esta cita?')) return
-    
+
     try {
       await appointmentApi.update(appointmentId, { status: 'cancelled' })
-      setAppointments(appointments.map(apt => 
+      setAppointments(appointments.map(apt =>
         apt._id === appointmentId ? { ...apt, status: 'cancelled' } : apt
       ))
     } catch (err) {
@@ -411,7 +411,7 @@ export default function AdminDashboard({ admin, onLogout }) {
               {creatingCustomer ? 'Creando...' : '✨ Crear Cliente'}
             </button>
           </div>
-          
+
           {createdCustomer && (
             <div className="p-5 bg-gradient-to-r from-pink-50 to-rose-50 rounded-2xl border border-pink-200">
               <p className="font-semibold text-green-800 flex items-center gap-2">✓ ¡Cliente creado exitosamente!</p>
@@ -451,7 +451,7 @@ export default function AdminDashboard({ admin, onLogout }) {
                 type="tel"
                 value={newAppointment.phone}
                 onChange={(e) => {
-                  setNewAppointment({...newAppointment, phone: e.target.value})
+                  setNewAppointment({ ...newAppointment, phone: e.target.value })
                   searchCustomers(e.target.value, 'phone')
                 }}
                 onFocus={() => newAppointment.phone && searchCustomers(newAppointment.phone, 'phone')}
@@ -478,7 +478,7 @@ export default function AdminDashboard({ admin, onLogout }) {
                 type="text"
                 value={newAppointment.name}
                 onChange={(e) => {
-                  setNewAppointment({...newAppointment, name: e.target.value})
+                  setNewAppointment({ ...newAppointment, name: e.target.value })
                   searchCustomers(e.target.value, 'name')
                 }}
                 onFocus={() => newAppointment.name && searchCustomers(newAppointment.name, 'name')}
@@ -502,7 +502,7 @@ export default function AdminDashboard({ admin, onLogout }) {
             </div>
             <select
               value={newAppointment.service}
-              onChange={(e) => setNewAppointment({...newAppointment, service: e.target.value})}
+              onChange={(e) => setNewAppointment({ ...newAppointment, service: e.target.value })}
               className="px-4 py-3 rounded-xl border-2 border-pink-200 focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all"
             >
               <option value="Manicure">Manicure - $35</option>
@@ -515,12 +515,12 @@ export default function AdminDashboard({ admin, onLogout }) {
             <input
               type="date"
               value={newAppointment.date}
-              onChange={(e) => setNewAppointment({...newAppointment, date: e.target.value})}
+              onChange={(e) => setNewAppointment({ ...newAppointment, date: e.target.value })}
               className="px-4 py-3 rounded-xl border-2 border-pink-200 focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all"
             />
             <select
               value={newAppointment.time}
-              onChange={(e) => setNewAppointment({...newAppointment, time: e.target.value})}
+              onChange={(e) => setNewAppointment({ ...newAppointment, time: e.target.value })}
               className="px-4 py-3 rounded-xl border-2 border-pink-200 focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all"
             >
               <option value="09:00">09:00 AM</option>
@@ -599,11 +599,10 @@ export default function AdminDashboard({ admin, onLogout }) {
               <button
                 key={item.key}
                 onClick={() => setFilter(item.key)}
-                className={`px-4 py-2 rounded-xl font-medium capitalize transition-colors ${
-                  filter === item.key
+                className={`px-4 py-2 rounded-xl font-medium capitalize transition-colors ${filter === item.key
                     ? 'bg-pink-500 text-white shadow-lg shadow-pink-300'
                     : 'bg-white text-gray-600 hover:bg-pink-100 border border-pink-100'
-                }`}
+                  }`}
               >
                 {item.label}
               </button>
@@ -612,21 +611,19 @@ export default function AdminDashboard({ admin, onLogout }) {
           <div className="flex gap-2 md:ml-auto">
             <button
               onClick={() => setViewMode('list')}
-              className={`px-4 py-2 rounded-xl font-medium transition-colors ${
-                viewMode === 'list'
+              className={`px-4 py-2 rounded-xl font-medium transition-colors ${viewMode === 'list'
                   ? 'bg-rose-500 text-white shadow-lg shadow-rose-300'
                   : 'bg-white text-gray-600 hover:bg-rose-100 border border-rose-100'
-              }`}
+                }`}
             >
               📋 Lista
             </button>
             <button
               onClick={() => setViewMode('calendar')}
-              className={`px-4 py-2 rounded-xl font-medium transition-colors ${
-                viewMode === 'calendar'
+              className={`px-4 py-2 rounded-xl font-medium transition-colors ${viewMode === 'calendar'
                   ? 'bg-rose-500 text-white shadow-lg shadow-rose-300'
                   : 'bg-white text-gray-600 hover:bg-rose-100 border border-rose-100'
-              }`}
+                }`}
             >
               📅 Calendario
             </button>
@@ -798,7 +795,7 @@ export default function AdminDashboard({ admin, onLogout }) {
                               ✕ Cancelar
                             </button>
                           )}
-                          
+
                           {/* Payment Link */}
                           {apt.paymentStatus !== 'paid' && (
                             <button
