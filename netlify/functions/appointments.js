@@ -1,4 +1,4 @@
-const { connectToDatabase, MONGODB_DB, normalizeMongoDoc } = require('./db');
+const { connectToDatabase, MONGODB_DB, normalizeMongoDoc, ObjectId } = require('./db');
 
 // Helper to normalize array of MongoDB documents
 const normalizeMongoDocs = (docs) => {
@@ -156,7 +156,6 @@ exports.handler = async (event, context) => {
         { $set: updateData }
       );
 
-      let updated;
       const updated = await appointments.findOne({ _id: objectId });
       return {
         statusCode: 200,
