@@ -29,9 +29,9 @@ exports.handler = async (event, context) => {
     // Get site URL from environment
     const siteUrl = process.env.SITE_URL || 'https://cafe-encanta-nails.netlify.app';
 
-    // Create Stripe Checkout session with Apple Pay support
+    // Create Stripe Checkout session
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card', 'apple_pay'],
+      payment_method_types: ['card'],
       line_items: [
         {
           price_data: {
@@ -49,12 +49,12 @@ exports.handler = async (event, context) => {
       success_url: `${siteUrl}/payment-success?session_id={CHECKOUT_SESSION_ID}&appointment_id=${String(appointmentId)}`,
       cancel_url: `${siteUrl}/appointment/${String(appointmentId)}`,
       metadata: {
-        appointmentId,
+        appointmentId: String(appointmentId),
       },
-      // Enable Apple Pay
+      // Enable Wallets like Apple Pay automatically
       payment_intent_data: {
         metadata: {
-          appointmentId,
+          appointmentId: String(appointmentId),
         }
       }
     });
