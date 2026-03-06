@@ -58,15 +58,41 @@ export default function BookAppointment({ customer }) {
       serviceType: selectedService ? selectedService.name : formData.serviceType,
       paymentType: formData.paymentType,
       amount: amount,
-      paidAmount: formData.paymentType === 'waitlist' ? 0 : 
-                  formData.paymentType === 'min_deposit' ? 10 : amount,
+      paidAmount: formData.paymentType === 'waitlist' ? 0 :
+        formData.paymentType === 'min_deposit' ? 10 : amount,
       paymentStatus: formData.paymentType === 'waitlist' ? 'none' : 'partial',
       status: formData.paymentType === 'waitlist' ? 'waitlist' : 'confirmed',
       notes: formData.notes
     }
 
     try {
-      await appointmentApi.create(appointmentData)
+      const response = await appointmentApi.create(appointmentData)
+      const appointment = response;
+
+      // If it's a paid appointment, redirect to Stripe
+      if (formData.paymentType !== 'waitlist') {
+        const paymentResponse = await fetch('/.netlify/functions/payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            appointmentId: appointment._id,
+            amount: appointmentData.paidAmount,
+            customerName: appointment.customerName,
+            serviceType: appointment.serviceType
+          })
+        });
+
+        const paymentData = await paymentResponse.json();
+
+        if (paymentData.url) {
+          window.location.href = paymentData.url;
+          return; // Stop here, browser will redirect
+        } else {
+          throw new Error(paymentData.error || 'Error al iniciar el pago');
+        }
+      }
+
+      // If waitlist, just go to dashboard
       navigate('/dashboard')
     } catch (err) {
       setError(err.message || 'Error al reservar. Por favor intenta de nuevo.')
@@ -107,11 +133,10 @@ export default function BookAppointment({ customer }) {
                 {serviceTypes.map((service) => (
                   <label
                     key={service.id}
-                    className={`p-2.5 sm:p-3 border-2 rounded-lg sm:rounded-xl cursor-pointer transition-all ${
-                      formData.serviceType === service.id
+                    className={`p-2.5 sm:p-3 border-2 rounded-lg sm:rounded-xl cursor-pointer transition-all ${formData.serviceType === service.id
                         ? 'border-pink-400 bg-pink-50'
                         : 'border-gray-200 hover:border-pink-200'
-                    }`}
+                      }`}
                   >
                     <input
                       type="radio"
@@ -172,11 +197,10 @@ export default function BookAppointment({ customer }) {
                 Opción de Pago
               </label>
               <div className="space-y-2 sm:space-y-3">
-                <label className={`flex p-3 sm:p-4 border-2 rounded-lg sm:rounded-xl cursor-pointer transition-all ${
-                  formData.paymentType === 'waitlist'
+                <label className={`flex p-3 sm:p-4 border-2 rounded-lg sm:rounded-xl cursor-pointer transition-all ${formData.paymentType === 'waitlist'
                     ? 'border-pink-400 bg-pink-50'
                     : 'border-gray-200 hover:border-pink-200'
-                }`}>
+                  }`}>
                   <input
                     type="radio"
                     name="paymentType"
@@ -191,11 +215,10 @@ export default function BookAppointment({ customer }) {
                   </div>
                 </label>
 
-                <label className={`flex p-3 sm:p-4 border-2 rounded-lg sm:rounded-xl cursor-pointer transition-all ${
-                  formData.paymentType === 'min_deposit'
+                <label className={`flex p-3 sm:p-4 border-2 rounded-lg sm:rounded-xl cursor-pointer transition-all ${formData.paymentType === 'min_deposit'
                     ? 'border-pink-400 bg-pink-50'
                     : 'border-gray-200 hover:border-pink-200'
-                }`}>
+                  }`}>
                   <input
                     type="radio"
                     name="paymentType"
@@ -210,11 +233,10 @@ export default function BookAppointment({ customer }) {
                   </div>
                 </label>
 
-                <label className={`flex p-3 sm:p-4 border-2 rounded-lg sm:rounded-xl cursor-pointer transition-all ${
-                  formData.paymentType === 'full'
+                <label className={`flex p-3 sm:p-4 border-2 rounded-lg sm:rounded-xl cursor-pointer transition-all ${formData.paymentType === 'full'
                     ? 'border-pink-400 bg-pink-50'
                     : 'border-gray-200 hover:border-pink-200'
-                }`}>
+                  }`}>
                   <input
                     type="radio"
                     name="paymentType"
