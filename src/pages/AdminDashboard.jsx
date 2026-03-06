@@ -19,12 +19,18 @@ export default function AdminDashboard({ admin, onLogout }) {
   const [whatsappLink, setWhatsappLink] = useState('')
   const [showPaymentModal, setShowPaymentModal] = useState(null)
 
+  const getTomorrowDate = () => {
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    return tomorrow.toISOString().split('T')[0]
+  }
+
   // New appointment from admin
   const [newAppointment, setNewAppointment] = useState({
     phone: '',
     name: '',
     service: 'Uñas Acrílicas',
-    date: '',
+    date: getTomorrowDate(),
     time: '10:00',
     amount: SERVICE_TYPES[0].price
   })

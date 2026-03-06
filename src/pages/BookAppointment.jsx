@@ -4,8 +4,14 @@ import { appointmentApi } from '../api'
 import { SERVICE_TYPES, DEPOSIT_PERCENTAGE, TIME_SLOTS, APPOINTMENT_DURATION_MINS } from '../constants'
 
 export default function BookAppointment({ customer }) {
+  const getTomorrowDate = () => {
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    return tomorrow.toISOString().split('T')[0]
+  }
+
   const [formData, setFormData] = useState({
-    date: '',
+    date: getTomorrowDate(),
     time: '10:00',
     serviceType: 'manicure',
     paymentType: 'waitlist',
@@ -140,11 +146,6 @@ export default function BookAppointment({ customer }) {
     }
   }
 
-  const getMinDate = () => {
-    const tomorrow = new Date()
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    return tomorrow.toISOString().split('T')[0]
-  }
 
   const availableSlots = timeSlots.filter(isSlotAvailable)
 
@@ -206,7 +207,7 @@ export default function BookAppointment({ customer }) {
                 name="date"
                 value={formData.date}
                 onChange={handleChange}
-                min={getMinDate()}
+                min={getTomorrowDate()}
                 className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 border-pink-200 focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all text-base"
                 required
               />
