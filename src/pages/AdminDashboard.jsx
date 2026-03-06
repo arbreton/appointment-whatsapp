@@ -32,7 +32,7 @@ export default function AdminDashboard({ admin, onLogout }) {
     service: 'Uñas Acrílicas',
     date: getTomorrowDate(),
     time: '10:00',
-    amount: SERVICE_TYPES[0].price
+    amount: PRICES['Uñas Acrílicas'] || 550
   })
 
   // Customer autocomplete
@@ -368,9 +368,9 @@ export default function AdminDashboard({ admin, onLogout }) {
         phone: '',
         name: '',
         service: 'Uñas Acrílicas',
-        date: '',
+        date: getTomorrowDate(),
         time: '10:00',
-        amount: SERVICE_TYPES[0].price
+        amount: PRICES['Uñas Acrílicas'] || 550
       })
 
       alert('¡Cita creada y notificada por WhatsApp!')

@@ -15,7 +15,7 @@ export default function BookAppointment({ customer }) {
     time: '10:00',
     serviceType: 'manicure',
     paymentType: 'waitlist',
-    amount: 0,
+    amount: SERVICE_TYPES.find(s => s.id === 'manicure')?.price || 0,
     notes: ''
   })
   const [loading, setLoading] = useState(false)
