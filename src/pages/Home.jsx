@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { PRICES } from '../constants'
 
 export default function Home() {
   return (
@@ -26,8 +27,8 @@ export default function Home() {
             Tus uñas perfectas, a solo un clic ✨
           </p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
-            <Link 
-              to="/login" 
+            <Link
+              to="/login"
               className="bg-gradient-to-r from-pink-400 via-rose-400 to-fuchsia-400 text-white font-bold py-3 sm:py-4 px-6 sm:px-10 rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all transform text-base sm:text-lg"
             >
               💅 Agendar Cita
@@ -40,7 +41,7 @@ export default function Home() {
       <div className="py-10 sm:py-16 px-4 relative z-10">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-8 sm:mb-12 flex items-center justify-center gap-2 sm:gap-3 px-2">
-            <span className="text-2xl sm:text-3xl">✨</span> 
+            <span className="text-2xl sm:text-3xl">✨</span>
             Nuestros Servicios
             <span className="text-2xl sm:text-3xl">✨</span>
           </h2>
@@ -50,7 +51,7 @@ export default function Home() {
               <div className="text-4xl sm:text-5xl mb-3 sm:mb-4 text-center">💅</div>
               <h3 className="text-lg sm:text-xl font-bold text-center text-gray-800 mb-2">Manicure</h3>
               <p className="text-gray-600 text-center mb-3 sm:mb-4 text-sm sm:text-base">Manos perfectas y cuidadas</p>
-              <p className="text-center text-xl sm:text-2xl font-bold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">$35</p>
+              <p className="text-center text-xl sm:text-2xl font-bold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">${PRICES.manicure}</p>
             </div>
 
             {/* Pedicure */}
@@ -58,7 +59,7 @@ export default function Home() {
               <div className="text-4xl sm:text-5xl mb-3 sm:mb-4 text-center">🦶</div>
               <h3 className="text-lg sm:text-xl font-bold text-center text-gray-800 mb-2">Pedicure</h3>
               <p className="text-gray-600 text-center mb-3 sm:mb-4 text-sm sm:text-base">Pies suaves y hermosos</p>
-              <p className="text-center text-xl sm:text-2xl font-bold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">$40</p>
+              <p className="text-center text-xl sm:text-2xl font-bold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">${PRICES.pedicure}</p>
             </div>
 
             {/* Uñas Acrílicas */}
@@ -66,7 +67,7 @@ export default function Home() {
               <div className="text-4xl sm:text-5xl mb-3 sm:mb-4 text-center">✨</div>
               <h3 className="text-lg sm:text-xl font-bold text-center text-gray-800 mb-2">Uñas Acrílicas</h3>
               <p className="text-gray-600 text-center mb-3 sm:mb-4 text-sm sm:text-base">Uñas largas y elegantes</p>
-              <p className="text-center text-xl sm:text-2xl font-bold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">$55</p>
+              <p className="text-center text-xl sm:text-2xl font-bold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">${PRICES.nails}</p>
             </div>
 
             {/* Uñas Gel */}
@@ -74,7 +75,7 @@ export default function Home() {
               <div className="text-4xl sm:text-5xl mb-3 sm:mb-4 text-center">💖</div>
               <h3 className="text-lg sm:text-xl font-bold text-center text-gray-800 mb-2">Uñas Gel</h3>
               <p className="text-gray-600 text-center mb-3 sm:mb-4 text-sm sm:text-base">Natural look con duración</p>
-              <p className="text-center text-xl sm:text-2xl font-bold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">$50</p>
+              <p className="text-center text-xl sm:text-2xl font-bold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">${PRICES.gel}</p>
             </div>
 
             {/* Mani + Pedi */}
@@ -82,7 +83,7 @@ export default function Home() {
               <div className="text-4xl sm:text-5xl mb-3 sm:mb-4 text-center">🌟</div>
               <h3 className="text-lg sm:text-xl font-bold text-center text-gray-800 mb-2">Mani + Pedi</h3>
               <p className="text-gray-600 text-center mb-3 sm:mb-4 text-sm sm:text-base">Combo completo</p>
-              <p className="text-center text-xl sm:text-2xl font-bold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">$65</p>
+              <p className="text-center text-xl sm:text-2xl font-bold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">${PRICES.manicure_pedicure}</p>
             </div>
 
             {/* Relleno */}
@@ -90,7 +91,7 @@ export default function Home() {
               <div className="text-4xl sm:text-5xl mb-3 sm:mb-4 text-center">💅</div>
               <h3 className="text-lg sm:text-xl font-bold text-center text-gray-800 mb-2">Relleno</h3>
               <p className="text-gray-600 text-center mb-3 sm:mb-4 text-sm sm:text-base">Mantenimiento de uñas</p>
-              <p className="text-center text-xl sm:text-2xl font-bold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">$35</p>
+              <p className="text-center text-xl sm:text-2xl font-bold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">${PRICES.fill_in}</p>
             </div>
           </div>
         </div>
