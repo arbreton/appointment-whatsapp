@@ -63,12 +63,16 @@ export default function BookAppointment({ customer }) {
 
       // If it's a paid appointment, redirect to Stripe
       if (formData.paymentType !== 'waitlist') {
+        const stripeAmount = formData.paymentType === 'min_deposit'
+          ? Math.round(amount * DEPOSIT_PERCENTAGE)
+          : amount;
+
         const paymentResponse = await fetch('/.netlify/functions/payment', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             appointmentId: appointment._id,
-            amount: appointmentData.paidAmount,
+            amount: stripeAmount,
             customerName: appointment.customerName,
             serviceType: appointment.serviceType
           })
