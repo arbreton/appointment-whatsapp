@@ -60,10 +60,10 @@ export default function CustomerManagement({ admin, onLogout }) {
 
   const generateLoginLink = (phone) => {
     const siteUrl = window.location.origin
-    return `${siteUrl}/login?ref=${encodeURIComponent(phone)}`
+    return `${siteUrl}/login?loginref=${encodeURIComponent(phone)}`
   }
 
-  const filteredCustomers = searchPhone 
+  const filteredCustomers = searchPhone
     ? customers.filter(c => c.phone.includes(searchPhone) || c.name.toLowerCase().includes(searchPhone.toLowerCase()))
     : customers
 
@@ -121,11 +121,10 @@ export default function CustomerManagement({ admin, onLogout }) {
             </div>
             <button
               onClick={() => setShowAllPins(!showAllPins)}
-              className={`px-6 py-3 rounded-xl font-semibold transition-all ${
-                showAllPins 
-                  ? 'bg-pink-500 text-white shadow-lg shadow-pink-300' 
+              className={`px-6 py-3 rounded-xl font-semibold transition-all ${showAllPins
+                  ? 'bg-pink-500 text-white shadow-lg shadow-pink-300'
                   : 'bg-pink-100 text-pink-600 hover:bg-pink-200'
-              }`}
+                }`}
             >
               {showAllPins ? '🙈 Ocultar PINs' : '👁️ Mostrar PINs'}
             </button>
@@ -180,8 +179,8 @@ export default function CustomerManagement({ admin, onLogout }) {
                 </thead>
                 <tbody className="divide-y divide-pink-100">
                   {filteredCustomers.map((customer, index) => (
-                    <tr 
-                      key={customer._id || customer.phone} 
+                    <tr
+                      key={customer._id || customer.phone}
                       className={`hover:bg-pink-50/50 transition-colors ${index % 2 === 0 ? 'bg-white/50' : 'bg-pink-25'}`}
                     >
                       <td className="px-6 py-4">
@@ -231,9 +230,8 @@ export default function CustomerManagement({ admin, onLogout }) {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
-                          <span className={`font-mono text-lg font-bold ${
-                            showAllPins ? 'text-pink-600' : 'text-gray-300'
-                          }`}>
+                          <span className={`font-mono text-lg font-bold ${showAllPins ? 'text-pink-600' : 'text-gray-300'
+                            }`}>
                             {showAllPins ? customer.pin : '••••'}
                           </span>
                           <button
@@ -269,7 +267,7 @@ export default function CustomerManagement({ admin, onLogout }) {
                             onClick={() => {
                               const link = generateLoginLink(customer.phone)
                               sendWhatsAppMessage(
-                                customer.phone, 
+                                customer.phone,
                                 `Hola ${customer.name}, aquí está tu enlace para iniciar sesión: ${link}`
                               )
                             }}

@@ -12,7 +12,7 @@ export default function CustomerLogin({ onLogin }) {
 
   // Pre-fill phone from URL and try auto-login
   useEffect(() => {
-    const refPhone = searchParams.get('ref')
+    const refPhone = searchParams.get('loginref') || searchParams.get('ref')
     if (refPhone) {
       setPhone(refPhone)
       // Try auto-login without PIN

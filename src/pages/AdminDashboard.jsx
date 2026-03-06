@@ -208,7 +208,7 @@ export default function AdminDashboard({ admin, onLogout }) {
   const generateLoginLink = (phone) => {
     const siteUrl = window.location.origin
     const phoneToUse = phone || customerPhone
-    return `${siteUrl}/login?ref=${encodeURIComponent(phoneToUse)}`
+    return `${siteUrl}/login?loginref=${encodeURIComponent(phoneToUse)}`
   }
 
   const generateBookingLink = async () => {
@@ -227,13 +227,13 @@ export default function AdminDashboard({ admin, onLogout }) {
     }
 
     // Generate link that auto-logs in and goes to booking
-    const link = `${siteUrl}/login?ref=${encodeURIComponent(customerPhone)}&redirectTo=/book`
+    const link = `${siteUrl}/login?loginref=${encodeURIComponent(customerPhone)}&redirectTo=/book`
     setWhatsappLink(link)
   }
 
   const generatePaymentLink = (appointment) => {
     const siteUrl = window.location.origin
-    return `${siteUrl}/appointment/${appointment._id}?ref=${encodeURIComponent(appointment.customerPhone)}`
+    return `${siteUrl}/appointment/${appointment._id}?loginref=${encodeURIComponent(appointment.customerPhone)}`
   }
 
   const sendWhatsAppMessage = (phone, message) => {
