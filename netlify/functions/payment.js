@@ -26,8 +26,10 @@ exports.handler = async (event, context) => {
     const data = JSON.parse(body);
     const { appointmentId, amount, customerEmail, customerName, serviceType } = data;
 
-    // Get site URL from environment
-    const siteUrl = process.env.SITE_URL || 'https://cafe-encanta-nails.netlify.app';
+    // Get site URL dynamically or from environment
+    const protocol = event.headers['x-forwarded-proto'] || 'https';
+    const host = event.headers.host;
+    const siteUrl = process.env.SITE_URL || `${protocol}://${host}`;
 
     // Create Stripe Checkout session
     const session = await stripe.checkout.sessions.create({
