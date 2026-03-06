@@ -1,7 +1,7 @@
 const { MongoClient } = require('mongodb');
 
-const MONGODB_URI = process.env.MONGODB_URI || '';
-const MONGODB_DB = 'cafe_encanta_nails';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://cafeencanta_db_user:zEy8snY3oKtiRKBc@cluster0.ucfamfc.mongodb.net/?appName=Cluster0';
+const MONGODB_DB = process.env.MONGODB_DB || 'cafe_encanta_nails';
 
 let cachedClient = null;
 
@@ -10,14 +10,21 @@ async function connectToDatabase() {
     return cachedClient;
   }
   
-  const client = new MongoClient(MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
-  
-  await client.connect();
-  cachedClient = client;
-  return client;
+  try {
+    console.log('Connecting to MongoDB...');
+    const client = new MongoClient(MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    
+    await client.connect();
+    console.log('Connected to MongoDB');
+    cachedClient = client;
+    return client;
+  } catch (error) {
+    console.error('MongoDB connection error:', error);
+    throw error;
+  }
 }
 
 module.exports = { connectToDatabase, MONGODB_DB };
