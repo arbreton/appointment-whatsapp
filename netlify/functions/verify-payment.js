@@ -45,6 +45,7 @@ export const handler = async (event, context) => {
                 amount: parseFloat(appointmentData.amount),
                 paidAmount: parseFloat(session.amount_total) / 100,
                 paymentStatus: parseFloat(session.amount_total) / 100 >= parseFloat(appointmentData.amount) ? 'paid' : 'partial',
+                paymentType: 'stripe',
                 status: 'confirmed',
                 createdAt: new Date(),
                 updatedAt: new Date()
@@ -70,12 +71,13 @@ export const handler = async (event, context) => {
                     $set: {
                         paymentStatus: isFullyPaid ? 'paid' : 'partial',
                         paidAmount: totalPaid,
+                        paymentType: 'stripe',
                         updatedAt: new Date()
                     }
                 }
             );
 
-            appointment = { ...currentApt, paymentStatus: isFullyPaid ? 'paid' : 'partial', paidAmount: totalPaid };
+            appointment = { ...currentApt, paymentStatus: isFullyPaid ? 'paid' : 'partial', paidAmount: totalPaid, paymentType: 'stripe' };
         }
 
         return {
