@@ -1,4 +1,4 @@
-const { connectToDatabase, MONGODB_DB, normalizeMongoDoc } = require('./db');
+const { connectToDatabase, MONGODB_DB, normalizeMongoDoc } = require('./db.cjs');
 
 // Helper to normalize array of MongoDB documents
 const normalizeMongoDocs = (docs) => {
