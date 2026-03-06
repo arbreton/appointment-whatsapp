@@ -9,39 +9,6 @@ export default function AdminDashboard({ admin, onLogout }) {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
 
-  useEffect(() => {
-    if (newAppointment.date) {
-      fetchDayAppointments(newAppointment.date)
-    }
-  }, [newAppointment.date])
-
-  const fetchDayAppointments = async (date) => {
-    try {
-      const data = await appointmentApi.getByDate(date)
-      setDayAppointments(data || [])
-    } catch (err) {
-      console.error('Error fetching day appointments:', err)
-    }
-  }
-
-  const isSlotAvailable = (time) => {
-    if (!newAppointment.date) return true
-
-    // Create a UTC timestamp for the slot to compare with stored UTC appointment dates
-    const slotDate = new Date(`${newAppointment.date}T${time}:00`)
-    const slotTime = slotDate.getTime()
-    const DURATION_MS = APPOINTMENT_DURATION_MINS * 60 * 1000
-
-    return !dayAppointments.some(apt => {
-      const aptTime = new Date(apt.appointmentDate).getTime()
-      // A slot is taken if an existing appointment starts within +/- 90 mins of the slot start
-      const isOverlap = Math.abs(slotTime - aptTime) < DURATION_MS
-      return isOverlap && apt.status !== 'cancelled' && apt.status !== 'rejected'
-    })
-  }
-
-  const availableSlots = TIME_SLOTS.filter(isSlotAvailable)
-
   // Customer creation
   const [newCustomer, setNewCustomer] = useState({ phone: '', name: '' })
   const [creatingCustomer, setCreatingCustomer] = useState(false)
@@ -69,6 +36,41 @@ export default function AdminDashboard({ admin, onLogout }) {
 
   // View mode
   const [viewMode, setViewMode] = useState('list')
+
+  // Helper functions
+  const fetchDayAppointments = async (date) => {
+    try {
+      const data = await appointmentApi.getByDate(date)
+      setDayAppointments(data || [])
+    } catch (err) {
+      console.error('Error fetching day appointments:', err)
+    }
+  }
+
+  const isSlotAvailable = (time) => {
+    if (!newAppointment.date) return true
+
+    // Create a UTC timestamp for the slot to compare with stored UTC appointment dates
+    const slotDate = new Date(`${newAppointment.date}T${time}:00`)
+    const slotTime = slotDate.getTime()
+    const DURATION_MS = APPOINTMENT_DURATION_MINS * 60 * 1000
+
+    return !dayAppointments.some(apt => {
+      const aptTime = new Date(apt.appointmentDate).getTime()
+      // A slot is taken if an existing appointment starts within +/- 90 mins of the slot start
+      const isOverlap = Math.abs(slotTime - aptTime) < DURATION_MS
+      return isOverlap && apt.status !== 'cancelled' && apt.status !== 'rejected'
+    })
+  }
+
+  const availableSlots = TIME_SLOTS.filter(isSlotAvailable)
+
+  // Effects
+  useEffect(() => {
+    if (newAppointment.date) {
+      fetchDayAppointments(newAppointment.date)
+    }
+  }, [newAppointment.date])
 
   // Fetch all customers for autocomplete
   useEffect(() => {
