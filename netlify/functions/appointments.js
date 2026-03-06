@@ -1,5 +1,33 @@
 const { connectToDatabase, MONGODB_DB } = require('./db');
 
+// Helper to convert MongoDB extended JSON to regular JS objects
+const normalizeMongoDoc = (doc) => {
+  if (!doc) return null;
+  const normalized = {};
+  for (const key in doc) {
+    if (key === '_id' && doc[key] && doc[key].$oid) {
+      normalized[key] = doc[key].$oid;
+    } else if (key === 'appointmentDate' && doc[key] && doc[key].$date) {
+      normalized[key] = doc[key].$date;
+    } else if (key === 'createdAt' && doc[key] && doc[key].$date) {
+      normalized[key] = doc[key].$date;
+    } else if (key === 'updatedAt' && doc[key] && doc[key].$date) {
+      normalized[key] = doc[key].$date;
+    } else if (typeof doc[key] === 'object' && doc[key] !== null) {
+      normalized[key] = normalizeMongoDoc(doc[key]);
+    } else {
+      normalized[key] = doc[key];
+    }
+  }
+  return normalized;
+};
+
+// Helper to normalize array of MongoDB documents
+const normalizeMongoDocs = (docs) => {
+  if (!Array.isArray(docs)) return normalizeMongoDoc(docs);
+  return docs.map(normalizeMongoDoc);
+};
+
 exports.handler = async (event, context) => {
   const { httpMethod, queryStringParameters, body } = event;
   
@@ -23,12 +51,22 @@ exports.handler = async (event, context) => {
       const { phone, id, date } = queryStringParameters;
       
       if (id) {
-        const appointment = await appointments.findOne({ _id: require('mongodb').ObjectId(id) });
-        return {
-          statusCode: 200,
-          headers,
-          body: JSON.stringify(appointment)
-        };
+        try {
+          const appointment = await appointments.findOne({ _id: require('mongodb').ObjectId(id) });
+          return {
+            statusCode: 200,
+            headers,
+            body: JSON.stringify(normalizeMongoDoc(appointment))
+          };
+        } catch (err) {
+          // Try finding by string _id if ObjectId fails
+          const appointment = await appointments.findOne({ _id: id });
+          return {
+            statusCode: 200,
+            headers,
+            body: JSON.stringify(normalizeMongoDoc(appointment))
+          };
+        }
       }
       
       if (phone) {
@@ -36,7 +74,7 @@ exports.handler = async (event, context) => {
         return {
           statusCode: 200,
           headers,
-          body: JSON.stringify(customerAppointments)
+          body: JSON.stringify(normalizeMongoDocs(customerAppointments))
         };
       }
       
@@ -55,7 +93,7 @@ exports.handler = async (event, context) => {
         return {
           statusCode: 200,
           headers,
-          body: JSON.stringify(dayAppointments)
+          body: JSON.stringify(normalizeMongoDocs(dayAppointments))
         };
       }
       
@@ -63,7 +101,7 @@ exports.handler = async (event, context) => {
       return {
         statusCode: 200,
         headers,
-        body: JSON.stringify(allAppointments)
+        body: JSON.stringify(normalizeMongoDocs(allAppointments))
       };
     }
     
@@ -91,7 +129,7 @@ exports.handler = async (event, context) => {
       return {
         statusCode: 201,
         headers,
-        body: JSON.stringify(newAppointment)
+        body: JSON.stringify(normalizeMongoDoc(newAppointment))
       };
     }
     
@@ -118,16 +156,28 @@ exports.handler = async (event, context) => {
       if (data.serviceType) updateData.serviceType = data.serviceType;
       if (data.notes !== undefined) updateData.notes = data.notes;
       
+      let objectId;
+      try {
+        objectId = require('mongodb').ObjectId(id);
+      } catch (err) {
+        objectId = id;
+      }
+      
       await appointments.updateOne(
-        { _id: require('mongodb').ObjectId(id) },
+        { _id: objectId },
         { $set: updateData }
       );
       
-      const updated = await appointments.findOne({ _id: require('mongodb').ObjectId(id) });
+      let updated;
+      try {
+        updated = await appointments.findOne({ _id: require('mongodb').ObjectId(id) });
+      } catch (err) {
+        updated = await appointments.findOne({ _id: id });
+      }
       return {
         statusCode: 200,
         headers,
-        body: JSON.stringify(updated)
+        body: JSON.stringify(normalizeMongoDoc(updated))
       };
     }
     
@@ -142,7 +192,14 @@ exports.handler = async (event, context) => {
         };
       }
       
-      await appointments.deleteOne({ _id: require('mongodb').ObjectId(id) });
+      let deleteId;
+      try {
+        deleteId = require('mongodb').ObjectId(id);
+      } catch (err) {
+        deleteId = id;
+      }
+      
+      await appointments.deleteOne({ _id: deleteId });
       
       return {
         statusCode: 200,

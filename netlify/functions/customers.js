@@ -1,5 +1,31 @@
 const { connectToDatabase, MONGODB_DB } = require('./db');
 
+// Helper to convert MongoDB extended JSON to regular JS objects
+const normalizeMongoDoc = (doc) => {
+  if (!doc) return null;
+  const normalized = {};
+  for (const key in doc) {
+    if (key === '_id' && doc[key] && doc[key].$oid) {
+      normalized[key] = doc[key].$oid;
+    } else if (key === 'createdAt' && doc[key] && doc[key].$date) {
+      normalized[key] = doc[key].$date;
+    } else if (key === 'updatedAt' && doc[key] && doc[key].$date) {
+      normalized[key] = doc[key].$date;
+    } else if (typeof doc[key] === 'object' && doc[key] !== null) {
+      normalized[key] = normalizeMongoDoc(doc[key]);
+    } else {
+      normalized[key] = doc[key];
+    }
+  }
+  return normalized;
+};
+
+// Helper to normalize array of MongoDB documents
+const normalizeMongoDocs = (docs) => {
+  if (!Array.isArray(docs)) return normalizeMongoDoc(docs);
+  return docs.map(normalizeMongoDoc);
+};
+
 exports.handler = async (event, context) => {
   const { httpMethod, queryStringParameters, body } = event;
   
@@ -27,7 +53,7 @@ exports.handler = async (event, context) => {
         return {
           statusCode: 200,
           headers,
-          body: JSON.stringify(customer)
+          body: JSON.stringify(normalizeMongoDoc(customer))
         };
       }
       
@@ -35,7 +61,7 @@ exports.handler = async (event, context) => {
       return {
         statusCode: 200,
         headers,
-        body: JSON.stringify(allCustomers)
+        body: JSON.stringify(normalizeMongoDocs(allCustomers))
       };
     }
     
@@ -56,7 +82,7 @@ exports.handler = async (event, context) => {
         return {
           statusCode: 200,
           headers,
-          body: JSON.stringify(updated)
+          body: JSON.stringify(normalizeMongoDoc(updated))
         };
       }
       
@@ -75,7 +101,7 @@ exports.handler = async (event, context) => {
       return {
         statusCode: 201,
         headers,
-        body: JSON.stringify(newCustomer)
+        body: JSON.stringify(normalizeMongoDoc(newCustomer))
       };
     }
     
@@ -96,7 +122,7 @@ exports.handler = async (event, context) => {
       return {
         statusCode: 200,
         headers,
-        body: JSON.stringify(updated)
+        body: JSON.stringify(normalizeMongoDoc(updated))
       };
     }
     
