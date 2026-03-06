@@ -109,7 +109,9 @@ export default function AppointmentDetail({ customer }) {
   }
 
   const amountDue = appointment.amount - appointment.paidAmount
+  const isWaitlist = appointment.status === 'waitlist' || (appointment.paymentStatus === 'none' && appointment.paidAmount === 0)
   const canPay = amountDue > 0 && appointment.paymentStatus !== 'paid'
+  const hasPaidSomething = (appointment.paidAmount || 0) > 0
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-fuchsia-50 pb-8">
@@ -225,21 +227,23 @@ export default function AppointmentDetail({ customer }) {
                   </div>
                 </label>
 
-                <label className={`flex items-center p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all ${paymentOption === 'deposit' ? 'border-pink-400 bg-pink-50' : 'border-gray-200'
-                  }`}>
-                  <input
-                    type="radio"
-                    name="paymentOption"
-                    value="deposit"
-                    checked={paymentOption === 'deposit'}
-                    onChange={(e) => setPaymentOption(e.target.value)}
-                    className="w-4 h-4 sm:w-5 sm:h-5 text-pink-500"
-                  />
-                  <div className="ml-3">
-                    <p className="font-semibold text-sm sm:text-base">Depósito Mínimo</p>
-                    <p className="text-xs sm:text-sm text-gray-500">20% del total (resto al terminar)</p>
-                  </div>
-                </label>
+                {!hasPaidSomething && (
+                  <label className={`flex items-center p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all ${paymentOption === 'deposit' ? 'border-pink-400 bg-pink-50' : 'border-gray-200'
+                    }`}>
+                    <input
+                      type="radio"
+                      name="paymentOption"
+                      value="deposit"
+                      checked={paymentOption === 'deposit'}
+                      onChange={(e) => setPaymentOption(e.target.value)}
+                      className="w-4 h-4 sm:w-5 sm:h-5 text-pink-500"
+                    />
+                    <div className="ml-3">
+                      <p className="font-semibold text-sm sm:text-base">Depósito Mínimo</p>
+                      <p className="text-xs sm:text-sm text-gray-500">20% del total (resto al terminar)</p>
+                    </div>
+                  </label>
+                )}
               </div>
 
               <div className="flex gap-2 sm:gap-3">

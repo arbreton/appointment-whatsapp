@@ -51,8 +51,7 @@ export default function BookAppointment({ customer }) {
       serviceType: selectedService ? selectedService.name : formData.serviceType,
       paymentType: formData.paymentType,
       amount: amount,
-      paidAmount: formData.paymentType === 'waitlist' ? 0 :
-        formData.paymentType === 'min_deposit' ? Math.round(amount * DEPOSIT_PERCENTAGE) : amount,
+      paidAmount: 0,
       paymentStatus: formData.paymentType === 'waitlist' ? 'none' : 'pending_payment',
       status: formData.paymentType === 'waitlist' ? 'waitlist' : 'confirmed',
       notes: formData.notes
