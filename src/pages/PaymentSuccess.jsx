@@ -17,30 +17,25 @@ export default function PaymentSuccess() {
     }
   }, [searchParams])
 
-  const verifyAndUpdatePayment = async () => {
-    const appointmentId = searchParams.get('appointment_id')
-
+  const verifyAndUpdatePayment = async (sessionId) => { // sessionId passed as argument
     try {
-      const appointment = await appointmentApi.getById(appointmentId)
+      // Verify payment and create/update appointment via backend
+      const response = await fetch('/.netlify/functions/verify-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId })
+      });
 
-      if (appointment) {
-        const paidAmountArg = parseFloat(searchParams.get('amount')) || 0;
-        const totalPaid = (appointment.paidAmount || 0) + paidAmountArg;
-        const isFullyPaid = totalPaid >= appointment.amount;
+      const appointment = await response.json();
 
-        await appointmentApi.update(appointmentId, {
-          paymentStatus: isFullyPaid ? 'paid' : 'partial',
-          paidAmount: totalPaid,
-          paymentMethod: 'stripe'
-        })
-
+      if (appointment && !appointment.error) {
+        setAppointmentId(appointment._id)
         setStatus('success')
       } else {
-        console.error('Appointment not found:', appointmentId)
-        setStatus('error')
+        throw new Error(appointment.error || 'Error al verificar el pago')
       }
     } catch (err) {
-      console.error('Error updating payment:', err)
+      console.error('Verification error:', err)
       setStatus('error')
     }
   }

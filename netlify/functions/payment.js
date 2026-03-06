@@ -24,7 +24,7 @@ exports.handler = async (event, context) => {
 
   try {
     const data = JSON.parse(body);
-    const { appointmentId, amount, customerEmail, customerName, serviceType } = data;
+    const { appointmentId, amount, customerName, serviceType, appointmentData } = data;
 
     // Get site URL dynamically or from environment
     const protocol = event.headers['x-forwarded-proto'] || 'https';
@@ -48,15 +48,17 @@ exports.handler = async (event, context) => {
         },
       ],
       mode: 'payment',
-      success_url: `${siteUrl}/payment-success?session_id={CHECKOUT_SESSION_ID}&appointment_id=${String(appointmentId)}&amount=${amount}`,
-      cancel_url: `${siteUrl}/appointment/${String(appointmentId)}`,
+      success_url: `${siteUrl}/payment-success?session_id={CHECKOUT_SESSION_ID}&appointment_id=${appointmentId || 'NEW'}&amount=${amount}`,
+      cancel_url: appointmentId ? `${siteUrl}/appointment/${appointmentId}` : `${siteUrl}/dashboard`,
       metadata: {
-        appointmentId: String(appointmentId),
+        appointmentId: appointmentId ? String(appointmentId) : 'NEW',
+        ...(appointmentData || {})
       },
       // Enable Wallets like Apple Pay automatically
       payment_intent_data: {
         metadata: {
-          appointmentId: String(appointmentId),
+          appointmentId: appointmentId ? String(appointmentId) : 'NEW',
+          ...(appointmentData || {})
         }
       }
     });

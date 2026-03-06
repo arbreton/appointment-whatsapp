@@ -58,38 +58,42 @@ export default function BookAppointment({ customer }) {
     }
 
     try {
-      const response = await appointmentApi.create(appointmentData)
-      const appointment = response;
-
-      // If it's a paid appointment, redirect to Stripe
-      if (formData.paymentType !== 'waitlist') {
-        const stripeAmount = formData.paymentType === 'min_deposit'
-          ? Math.round(amount * DEPOSIT_PERCENTAGE)
-          : amount;
-
-        const paymentResponse = await fetch('/.netlify/functions/payment', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            appointmentId: appointment._id,
-            amount: stripeAmount,
-            customerName: appointment.customerName,
-            serviceType: appointment.serviceType
-          })
-        });
-
-        const paymentData = await paymentResponse.json();
-
-        if (paymentData.url) {
-          window.location.href = paymentData.url;
-          return; // Stop here, browser will redirect
-        } else {
-          throw new Error(paymentData.error || 'Error al iniciar el pago');
-        }
+      // If it's a waitlist appointment, create immediately
+      if (formData.paymentType === 'waitlist') {
+        await appointmentApi.create(appointmentData)
+        navigate('/dashboard')
+        return
       }
 
-      // If waitlist, just go to dashboard
-      navigate('/dashboard')
+      // If it's a paid appointment, redirect to Stripe WITHOUT creating DB record yet
+      const stripeAmount = formData.paymentType === 'min_deposit'
+        ? Math.round(amount * DEPOSIT_PERCENTAGE)
+        : amount;
+
+      const paymentResponse = await fetch('/.netlify/functions/payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: stripeAmount,
+          customerName: appointmentData.customerName,
+          serviceType: appointmentData.serviceType,
+          appointmentData: {
+            ...appointmentData,
+            amount: String(appointmentData.amount), // Metadata must be strings
+            paidAmount: '0',
+            paymentStatus: 'pending_payment',
+            status: 'confirmed',
+          }
+        })
+      });
+
+      const paymentData = await paymentResponse.json();
+
+      if (paymentData.url) {
+        window.location.href = paymentData.url;
+      } else {
+        throw new Error(paymentData.error || 'Error al iniciar el pago');
+      }
     } catch (err) {
       setError(err.message || 'Error al reservar. Por favor intenta de nuevo.')
     } finally {
