@@ -82,32 +82,32 @@ export default function BookAppointment({ customer }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-fuchsia-50 pb-8">
       {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <Link to="/dashboard" className="text-gray-600 hover:text-gray-800 flex items-center gap-2">
+      <header className="bg-white/80 backdrop-blur-sm shadow-sm sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <Link to="/dashboard" className="text-gray-600 hover:text-gray-800 flex items-center gap-2 text-sm sm:text-base">
             ← Volver al Dashboard
           </Link>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-2xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-gray-800 mb-8">Reservar Cita</h1>
+      <main className="max-w-2xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-8 px-1">Reservar Cita</h1>
 
-        <div className="card">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 border border-pink-100">
           <form onSubmit={handleSubmit}>
             {/* Service Type */}
-            <div className="mb-6">
-              <label className="block text-gray-700 font-semibold mb-3">
+            <div className="mb-5 sm:mb-6">
+              <label className="block text-gray-700 font-semibold mb-2 sm:mb-3 text-sm sm:text-base">
                 Selecciona Servicio
               </label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                 {serviceTypes.map((service) => (
                   <label
                     key={service.id}
-                    className={`p-3 border-2 rounded-lg cursor-pointer transition-all ${
+                    className={`p-2.5 sm:p-3 border-2 rounded-lg sm:rounded-xl cursor-pointer transition-all ${
                       formData.serviceType === service.id
                         ? 'border-pink-400 bg-pink-50'
                         : 'border-gray-200 hover:border-pink-200'
@@ -121,8 +121,10 @@ export default function BookAppointment({ customer }) {
                       onChange={() => handleServiceChange(service.id)}
                       className="sr-only"
                     />
-                    <div className="font-medium">{service.name}</div>
-                    <div className="text-pink-600 font-semibold">${service.price}</div>
+                    <div className="flex justify-between items-center">
+                      <span className="font-medium text-sm sm:text-base">{service.name}</span>
+                      <span className="text-pink-600 font-semibold text-sm sm:text-base">${service.price}</span>
+                    </div>
                   </label>
                 ))}
               </div>
@@ -130,7 +132,7 @@ export default function BookAppointment({ customer }) {
 
             {/* Date */}
             <div className="mb-4">
-              <label className="block text-gray-700 font-semibold mb-2">
+              <label className="block text-gray-700 font-semibold mb-2 text-sm sm:text-base">
                 Selecciona Fecha
               </label>
               <input
@@ -139,21 +141,21 @@ export default function BookAppointment({ customer }) {
                 value={formData.date}
                 onChange={handleChange}
                 min={getMinDate()}
-                className="input-field"
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 border-pink-200 focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all text-base"
                 required
               />
             </div>
 
             {/* Time */}
             <div className="mb-4">
-              <label className="block text-gray-700 font-semibold mb-2">
+              <label className="block text-gray-700 font-semibold mb-2 text-sm sm:text-base">
                 Selecciona Hora
               </label>
               <select
                 name="time"
                 value={formData.time}
                 onChange={handleChange}
-                className="input-field"
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 border-pink-200 focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all text-base bg-white"
                 required
               >
                 {timeSlots.map((time) => (
@@ -165,12 +167,12 @@ export default function BookAppointment({ customer }) {
             </div>
 
             {/* Payment Option */}
-            <div className="mb-4">
-              <label className="block text-gray-700 font-semibold mb-3">
+            <div className="mb-4 sm:mb-5">
+              <label className="block text-gray-700 font-semibold mb-2 sm:mb-3 text-sm sm:text-base">
                 Opción de Pago
               </label>
-              <div className="space-y-3">
-                <label className={`flex p-4 border-2 rounded-lg cursor-pointer transition-all ${
+              <div className="space-y-2 sm:space-y-3">
+                <label className={`flex p-3 sm:p-4 border-2 rounded-lg sm:rounded-xl cursor-pointer transition-all ${
                   formData.paymentType === 'waitlist'
                     ? 'border-pink-400 bg-pink-50'
                     : 'border-gray-200 hover:border-pink-200'
@@ -181,15 +183,15 @@ export default function BookAppointment({ customer }) {
                     value="waitlist"
                     checked={formData.paymentType === 'waitlist'}
                     onChange={handleChange}
-                    className="mt-1"
+                    className="mt-0.5 sm:mt-1"
                   />
-                  <div className="ml-3">
-                    <div className="font-medium">Unirse a Lista de Espera</div>
-                    <div className="text-sm text-gray-500">Paga después de tu cita</div>
+                  <div className="ml-2 sm:ml-3">
+                    <div className="font-medium text-sm sm:text-base">Unirse a Lista de Espera</div>
+                    <div className="text-xs sm:text-sm text-gray-500">Paga después de tu cita</div>
                   </div>
                 </label>
 
-                <label className={`flex p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                <label className={`flex p-3 sm:p-4 border-2 rounded-lg sm:rounded-xl cursor-pointer transition-all ${
                   formData.paymentType === 'min_deposit'
                     ? 'border-pink-400 bg-pink-50'
                     : 'border-gray-200 hover:border-pink-200'
@@ -200,15 +202,15 @@ export default function BookAppointment({ customer }) {
                     value="min_deposit"
                     checked={formData.paymentType === 'min_deposit'}
                     onChange={handleChange}
-                    className="mt-1"
+                    className="mt-0.5 sm:mt-1"
                   />
-                  <div className="ml-3">
-                    <div className="font-medium">Pagar Depósito Mínimo ($10)</div>
-                    <div className="text-sm text-gray-500">Asegura tu lugar con un depósito</div>
+                  <div className="ml-2 sm:ml-3">
+                    <div className="font-medium text-sm sm:text-base">Pagar Depósito Mínimo ($10)</div>
+                    <div className="text-xs sm:text-sm text-gray-500">Asegura tu lugar con un depósito</div>
                   </div>
                 </label>
 
-                <label className={`flex p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                <label className={`flex p-3 sm:p-4 border-2 rounded-lg sm:rounded-xl cursor-pointer transition-all ${
                   formData.paymentType === 'full'
                     ? 'border-pink-400 bg-pink-50'
                     : 'border-gray-200 hover:border-pink-200'
@@ -219,19 +221,19 @@ export default function BookAppointment({ customer }) {
                     value="full"
                     checked={formData.paymentType === 'full'}
                     onChange={handleChange}
-                    className="mt-1"
+                    className="mt-0.5 sm:mt-1"
                   />
-                  <div className="ml-3">
-                    <div className="font-medium">Pagar Monto Completo</div>
-                    <div className="text-sm text-gray-500">Paga el monto completo ahora</div>
+                  <div className="ml-2 sm:ml-3">
+                    <div className="font-medium text-sm sm:text-base">Pagar Monto Completo</div>
+                    <div className="text-xs sm:text-sm text-gray-500">Paga el monto completo ahora</div>
                   </div>
                 </label>
               </div>
             </div>
 
             {/* Notes */}
-            <div className="mb-6">
-              <label className="block text-gray-700 font-semibold mb-2">
+            <div className="mb-5 sm:mb-6">
+              <label className="block text-gray-700 font-semibold mb-2 text-sm sm:text-base">
                 Solicitudes Especiales (Opcional)
               </label>
               <textarea
@@ -239,12 +241,12 @@ export default function BookAppointment({ customer }) {
                 value={formData.notes}
                 onChange={handleChange}
                 placeholder="¿Alguna solicitud especial?"
-                className="input-field h-24"
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 border-pink-200 focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all text-base h-20 sm:h-24 resize-none"
               />
             </div>
 
             {error && (
-              <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
+              <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-xl text-sm">
                 {error}
               </div>
             )}
@@ -252,7 +254,7 @@ export default function BookAppointment({ customer }) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full btn-primary disabled:opacity-50"
+              className="w-full bg-gradient-to-r from-pink-400 via-rose-400 to-fuchsia-400 text-white py-3 sm:py-4 rounded-xl font-bold text-base sm:text-lg shadow-lg shadow-pink-200 hover:shadow-xl hover:scale-[1.02] transition-all disabled:opacity-50 min-h-[48px]"
             >
               {loading ? 'Reservando...' : 'Confirmar Reserva'}
             </button>

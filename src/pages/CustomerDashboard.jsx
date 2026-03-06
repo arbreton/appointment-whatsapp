@@ -106,46 +106,47 @@ export default function CustomerDashboard({ customer, onLogout }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-fuchsia-50">
-      {/* Beautiful Header */}
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-fuchsia-50 pb-8">
+      {/* Beautiful Header - Mobile Optimized */}
       <header className="bg-gradient-to-r from-pink-400 via-rose-400 to-fuchsia-400 text-white shadow-xl">
-        <div className="max-w-4xl mx-auto px-4 py-5">
+        <div className="max-w-4xl mx-auto px-3 sm:px-4 py-3 sm:py-5">
           <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <span className="text-3xl">💅✨</span>
-              <div>
-                <h1 className="text-xl font-bold">Cafe Encanta Nails</h1>
-                <p className="text-pink-100 text-sm">Bienvenida, {customer.name}</p>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <span className="text-2xl sm:text-3xl">💅✨</span>
+              <div className="min-w-0">
+                <h1 className="text-base sm:text-xl font-bold truncate">Cafe Encanta Nails</h1>
+                <p className="text-pink-100 text-xs sm:text-sm truncate">Bienvenida, {customer.name}</p>
               </div>
             </div>
             <button
               onClick={onLogout}
-              className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-xl transition-all"
+              className="bg-white/20 hover:bg-white/30 text-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl transition-all text-xs sm:text-base whitespace-nowrap"
             >
-              Cerrar sesión
+              <span className="sm:hidden">✕</span>
+              <span className="hidden sm:inline">Cerrar sesión</span>
             </button>
           </div>
         </div>
       </header>
 
       {/* Decorative flowers */}
-      <div className="relative overflow-hidden h-4">
-        <div className="absolute top-0 left-10 text-pink-200 text-4xl opacity-50">🌸</div>
-        <div className="absolute top-0 right-20 text-rose-200 text-3xl opacity-50">🌺</div>
+      <div className="relative overflow-hidden h-3 sm:h-4">
+        <div className="absolute top-0 left-4 sm:left-10 text-pink-200 text-2xl sm:text-4xl opacity-50">🌸</div>
+        <div className="absolute top-0 right-8 sm:right-20 text-rose-200 text-xl sm:text-3xl opacity-50">🌺</div>
       </div>
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 py-6">
-        {/* PIN Section - Beautiful Card */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-6 mb-6 border border-pink-100">
-          <h2 className="text-lg font-bold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent mb-4 flex items-center gap-2">
+      <main className="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+        {/* PIN Section - Beautiful Card - Mobile Optimized */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 mb-4 sm:mb-6 border border-pink-100">
+          <h2 className="text-base sm:text-lg font-bold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent mb-3 sm:mb-4 flex items-center gap-2">
             🔐 Mi PIN de Acceso
           </h2>
           
-          <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
-            <div className="bg-gradient-to-r from-pink-100 to-rose-100 rounded-2xl p-4 flex-1">
-              <p className="text-gray-600 text-sm mb-1">Tu PIN actual:</p>
-              <div className="text-3xl font-bold text-pink-600 tracking-widest font-mono">
+          <div className="flex flex-col gap-3 sm:gap-4">
+            <div className="bg-gradient-to-r from-pink-100 to-rose-100 rounded-xl sm:rounded-2xl p-3 sm:p-4">
+              <p className="text-gray-600 text-xs sm:text-sm mb-1">Tu PIN actual:</p>
+              <div className="text-2xl sm:text-3xl font-bold text-pink-600 tracking-widest font-mono">
                 {customer.pin || '••••'}
               </div>
             </div>
@@ -158,18 +159,19 @@ export default function CustomerDashboard({ customer, onLogout }) {
                   onChange={(e) => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
                   placeholder="Nuevo PIN"
                   maxLength={4}
-                  className="px-4 py-3 rounded-xl border-2 border-pink-200 focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all text-center font-mono text-xl tracking-widest"
+                  inputMode="numeric"
+                  className="px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 border-pink-200 focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all text-center font-mono text-lg sm:text-xl tracking-widest"
                 />
                 <div className="flex gap-2">
                   <button 
                     onClick={handleChangePIN} 
-                    className="flex-1 bg-gradient-to-r from-pink-400 to-rose-400 text-white px-4 py-2 rounded-xl font-semibold shadow-lg shadow-pink-200 hover:shadow-xl transition-all"
+                    className="flex-1 bg-gradient-to-r from-pink-400 to-rose-400 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-semibold shadow-lg shadow-pink-200 hover:shadow-xl transition-all text-sm sm:text-base"
                   >
                     ✓ Guardar
                   </button>
                   <button 
                     onClick={() => { setChangingPin(false); setNewPin('') }} 
-                    className="px-4 py-2 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all"
+                    className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all text-sm sm:text-base"
                   >
                     ✕
                   </button>
@@ -178,7 +180,7 @@ export default function CustomerDashboard({ customer, onLogout }) {
             ) : (
               <button 
                 onClick={() => setChangingPin(true)} 
-                className="bg-gradient-to-r from-pink-400 to-rose-400 text-white px-6 py-3 rounded-xl font-semibold shadow-lg shadow-pink-200 hover:shadow-xl transition-all flex items-center gap-2"
+                className="bg-gradient-to-r from-pink-400 to-rose-400 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold shadow-lg shadow-pink-200 hover:shadow-xl transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
               >
                 🔄 Cambiar PIN
               </button>
@@ -186,81 +188,81 @@ export default function CustomerDashboard({ customer, onLogout }) {
           </div>
           
           {pinMessage && (
-            <p className="mt-2 text-green-600 font-medium flex items-center gap-2">
+            <p className="mt-2 sm:mt-3 text-green-600 font-medium flex items-center gap-2 text-sm">
               ✨ {pinMessage}
             </p>
           )}
         </div>
 
         {/* Appointments Section */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center gap-2">
             📅 Mis Citas
           </h1>
           <Link
             to="/book"
-            className="bg-gradient-to-r from-pink-400 to-rose-400 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+            className="bg-gradient-to-r from-pink-400 to-rose-400 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto"
           >
             ➕ Nueva Cita
           </Link>
         </div>
 
         {loading ? (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
-            <p className="mt-4 text-pink-500">Cargando citas...</p>
+          <div className="text-center py-8 sm:py-12">
+            <div className="inline-block animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-pink-500"></div>
+            <p className="mt-3 sm:mt-4 text-pink-500 text-sm sm:text-base">Cargando citas...</p>
           </div>
         ) : appointments.length === 0 ? (
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-12 text-center border border-pink-100">
-            <span className="text-7xl block mb-4">💅✨</span>
-            <h2 className="text-xl font-semibold text-gray-700 mb-2">Sin citas todavía</h2>
-            <p className="text-gray-500 mb-6">¡Agenda tu primera cita ahora!</p>
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-xl p-8 sm:p-12 text-center border border-pink-100">
+            <span className="text-5xl sm:text-7xl block mb-3 sm:mb-4">💅✨</span>
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-700 mb-2">Sin citas todavía</h2>
+            <p className="text-gray-500 mb-4 sm:mb-6 text-sm sm:text-base">¡Agenda tu primera cita ahora!</p>
             <Link
               to="/book"
-              className="inline-block bg-gradient-to-r from-pink-400 to-rose-400 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all"
+              className="inline-block bg-gradient-to-r from-pink-400 to-rose-400 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all text-sm sm:text-base"
             >
               ➕ Agendar Cita
             </Link>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {appointments.map((apt) => (
-              <div key={apt._id} className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg p-5 border border-pink-100 hover:shadow-xl transition-all">
-                <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+              <div key={apt._id} className="bg-white/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-lg p-4 sm:p-5 border border-pink-100 hover:shadow-xl transition-all">
+                <div className="flex flex-col gap-3 sm:gap-4">
                   <div className="flex-1">
-                    <div className="flex flex-wrap items-center gap-2 mb-3">
-                      <h3 className="text-lg font-semibold text-gray-800">{apt.serviceType}</h3>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusBadge(apt.status)}`}>
+                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
+                      <h3 className="text-base sm:text-lg font-semibold text-gray-800">{apt.serviceType}</h3>
+                      <span className={`px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-medium ${getStatusBadge(apt.status)}`}>
                         {getStatusText(apt.status)}
                       </span>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getPaymentBadge(apt.paymentStatus)}`}>
+                      <span className={`px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-medium ${getPaymentBadge(apt.paymentStatus)}`}>
                         {getPaymentText(apt.paymentStatus)}
                       </span>
                     </div>
-                    <p className="text-gray-600 flex items-center gap-2">
+                    <p className="text-gray-600 flex items-center gap-2 text-sm sm:text-base">
                       📅 {formatDate(apt.appointmentDate)}
                     </p>
                     {apt.notes && (
-                      <p className="text-gray-500 text-sm mt-1">📝 {apt.notes}</p>
+                      <p className="text-gray-500 text-xs sm:text-sm mt-1">📝 {apt.notes}</p>
                     )}
                     {apt.paymentStatus === 'paid' && apt.status === 'completed' && (
-                      <p className="text-green-600 text-sm mt-2 font-medium">✓ Pagado - ¡Gracias por tu visita!</p>
+                      <p className="text-green-600 text-xs sm:text-sm mt-2 font-medium">✓ Pagado - ¡Gracias por tu visita!</p>
                     )}
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {(apt.paymentStatus === 'partial' || apt.paymentStatus === 'pending_payment' || apt.paymentStatus === 'none') && apt.status !== 'cancelled' && apt.status !== 'completed' && apt.status !== 'rejected' && (
                       <Link
                         to={`/appointment/${apt._id}`}
-                        className="bg-gradient-to-r from-green-400 to-emerald-500 text-white px-5 py-2 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all"
+                        className="bg-gradient-to-r from-green-400 to-emerald-500 text-white px-3 sm:px-5 py-2 sm:py-2 rounded-lg sm:rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all text-sm"
                       >
-                        💳 Pagar Ahora
+                        💳 Pagar
                       </Link>
                     )}
                     {apt.status !== 'cancelled' && apt.status !== 'completed' && (
                       <button
                         onClick={() => handleCancel(apt._id)}
                         disabled={cancellingId === apt._id}
-                        className="px-5 py-2 rounded-xl bg-red-50 text-red-500 hover:bg-red-100 transition-all font-medium disabled:opacity-50"
+                        className="px-3 sm:px-5 py-2 sm:py-2 rounded-lg sm:rounded-xl bg-red-50 text-red-500 hover:bg-red-100 transition-all font-medium disabled:opacity-50 text-sm"
                       >
                         {cancellingId === apt._id ? '⏳' : '✕'} Cancelar
                       </button>
@@ -274,9 +276,9 @@ export default function CustomerDashboard({ customer, onLogout }) {
       </main>
 
       {/* Decorative bottom flowers */}
-      <div className="relative h-16 mt-8">
-        <div className="absolute bottom-0 left-10 text-pink-200 text-5xl opacity-50">🌸</div>
-        <div className="absolute bottom-0 right-10 text-rose-200 text-6xl opacity-50">🌺</div>
+      <div className="relative h-10 sm:h-16 mt-4 sm:mt-8">
+        <div className="absolute bottom-0 left-4 sm:left-10 text-pink-200 text-3xl sm:text-5xl opacity-50">🌸</div>
+        <div className="absolute bottom-0 right-4 sm:right-10 text-rose-200 text-4xl sm:text-6xl opacity-50">🌺</div>
       </div>
     </div>
   )

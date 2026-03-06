@@ -1,14 +1,13 @@
 // API for Cafe Encenta Nails
 // Uses Netlify Functions to connect to MongoDB
-// Falls back to localStorage for local development without Netlify CLI
+// Falls back to localStorage only if MongoDB is unavailable (development only)
 
 const FUNCTION_BASE = ''; // Empty means same origin, Netlify handles /api redirects
 
-// For local development, use localhost:9999 (Netlify CLI proxy)
+// For local development fallback
 const isDev = import.meta.env.DEV;
-const USE_NETLIFY = !isDev; // Only use Netlify functions in production
 
-// Local storage keys
+// Local storage keys (fallback only)
 const CUSTOMERS_KEY = 'cafe_encanta_customers';
 const APPOINTMENTS_KEY = 'cafe_encanta_appointments';
 
@@ -33,7 +32,7 @@ function generatePIN() {
   return Math.floor(1000 + Math.random() * 9000).toString();
 }
 
-// API call helper
+// API call helper - always tries MongoDB first, falls back to localStorage in dev
 async function apiCall(endpoint, method = 'GET', body = null) {
   const url = `${FUNCTION_BASE}/.netlify/functions/${endpoint}`;
   
@@ -48,58 +47,73 @@ async function apiCall(endpoint, method = 'GET', body = null) {
     options.body = JSON.stringify(body);
   }
   
-  const response = await fetch(url, options);
-  
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Request failed' }));
-    throw new Error(error.error || `HTTP ${response.status}`);
+  try {
+    const response = await fetch(url, options);
+    
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Request failed' }));
+      throw new Error(error.error || `HTTP ${response.status}`);
+    }
+    
+    return response.json();
+  } catch (error) {
+    // If it's a network error and we're in dev, fall back to localStorage
+    if (isDev && (error.message.includes('Failed to fetch') || error.message.includes('NetworkError'))) {
+      console.warn(`MongoDB unavailable, using localStorage fallback for ${endpoint}`);
+      throw new Error('MONGODB_FALLBACK');
+    }
+    throw error;
   }
-  
-  return response.json();
 }
 
-// Customer API - Local Storage fallback for development
+// Customer API
 export const customerApi = {
   // Admin creates a customer with PIN
   async create(phone, name) {
-    if (!USE_NETLIFY) {
-      const customers = getLocalData(CUSTOMERS_KEY);
-      const existing = customers.find(c => c.phone === phone);
-      if (existing) {
-        existing.pin = generatePIN();
-        existing.name = name;
+    try {
+      return await apiCall('customers', 'POST', { phone, name });
+    } catch (error) {
+      if (error.message === 'MONGODB_FALLBACK') {
+        const customers = getLocalData(CUSTOMERS_KEY);
+        const existing = customers.find(c => c.phone === phone);
+        if (existing) {
+          existing.pin = generatePIN();
+          existing.name = name;
+          saveLocalData(CUSTOMERS_KEY, customers);
+          return existing;
+        }
+        const newCustomer = {
+          _id: generateId(),
+          phone,
+          name,
+          pin: generatePIN(),
+          createdAt: new Date().toISOString()
+        };
+        customers.push(newCustomer);
         saveLocalData(CUSTOMERS_KEY, customers);
-        return existing;
+        return newCustomer;
       }
-      const newCustomer = {
-        _id: generateId(),
-        phone,
-        name,
-        pin: generatePIN(),
-        createdAt: new Date().toISOString()
-      };
-      customers.push(newCustomer);
-      saveLocalData(CUSTOMERS_KEY, customers);
-      return newCustomer;
+      throw error;
     }
-    
-    return apiCall('customers', 'POST', { phone, name });
   },
 
   // Get customer by phone
   async getByPhone(phone) {
-    if (!USE_NETLIFY) {
-      const customers = getLocalData(CUSTOMERS_KEY);
-      return customers.find(c => c.phone === phone) || null;
+    try {
+      return await apiCall(`customers?phone=${encodeURIComponent(phone)}`);
+    } catch (error) {
+      if (error.message === 'MONGODB_FALLBACK') {
+        const customers = getLocalData(CUSTOMERS_KEY);
+        return customers.find(c => c.phone === phone) || null;
+      }
+      throw error;
     }
-    return apiCall(`customers?phone=${encodeURIComponent(phone)}`);
   },
 
   // Customer login with phone + PIN
   async login(phone, pin = null) {
-    if (!USE_NETLIFY) {
-      const customers = getLocalData(CUSTOMERS_KEY);
-      const customer = customers.find(c => c.phone === phone);
+    try {
+      const customer = await apiCall(`customers?phone=${encodeURIComponent(phone)}`);
       if (!customer) {
         throw new Error('Cliente no encontrado');
       }
@@ -107,16 +121,20 @@ export const customerApi = {
         throw new Error('PIN incorrecto');
       }
       return customer;
+    } catch (error) {
+      if (error.message === 'MONGODB_FALLBACK') {
+        const customers = getLocalData(CUSTOMERS_KEY);
+        const customer = customers.find(c => c.phone === phone);
+        if (!customer) {
+          throw new Error('Cliente no encontrado');
+        }
+        if (pin && customer.pin !== pin) {
+          throw new Error('PIN incorrecto');
+        }
+        return customer;
+      }
+      throw error;
     }
-    
-    const customer = await apiCall(`customers?phone=${encodeURIComponent(phone)}`);
-    if (!customer) {
-      throw new Error('Cliente no encontrado');
-    }
-    if (pin && customer.pin !== pin) {
-      throw new Error('PIN incorrecto');
-    }
-    return customer;
   },
 
   // Auto-login from link (without PIN)
@@ -126,61 +144,75 @@ export const customerApi = {
 
   // Update PIN
   async updatePIN(phone, newPIN) {
-    if (!USE_NETLIFY) {
-      const customers = getLocalData(CUSTOMERS_KEY);
-      const customer = customers.find(c => c.phone === phone);
-      if (!customer) {
-        throw new Error('Cliente no encontrado');
+    try {
+      return await apiCall('customers', 'PUT', { phone, pin: newPIN });
+    } catch (error) {
+      if (error.message === 'MONGODB_FALLBACK') {
+        const customers = getLocalData(CUSTOMERS_KEY);
+        const customer = customers.find(c => c.phone === phone);
+        if (!customer) {
+          throw new Error('Cliente no encontrado');
+        }
+        customer.pin = newPIN;
+        saveLocalData(CUSTOMERS_KEY, customers);
+        return customer;
       }
-      customer.pin = newPIN;
-      saveLocalData(CUSTOMERS_KEY, customers);
-      return customer;
+      throw error;
     }
-    
-    return apiCall('customers', 'PUT', { phone, pin: newPIN });
   },
 
   // Get all customers (admin only)
   async getAll() {
-    if (!USE_NETLIFY) {
-      return getLocalData(CUSTOMERS_KEY);
+    try {
+      return await apiCall('customers');
+    } catch (error) {
+      if (error.message === 'MONGODB_FALLBACK') {
+        return getLocalData(CUSTOMERS_KEY);
+      }
+      throw error;
     }
-    return apiCall('customers');
   },
 
   // Update customer name (admin)
   async updateName(phone, name) {
-    if (!USE_NETLIFY) {
-      const customers = getLocalData(CUSTOMERS_KEY);
-      const customer = customers.find(c => c.phone === phone);
-      if (customer) {
-        customer.name = name;
-        saveLocalData(CUSTOMERS_KEY, customers);
-        return customer;
+    try {
+      return await apiCall('customers', 'PUT', { phone, name });
+    } catch (error) {
+      if (error.message === 'MONGODB_FALLBACK') {
+        const customers = getLocalData(CUSTOMERS_KEY);
+        const customer = customers.find(c => c.phone === phone);
+        if (customer) {
+          customer.name = name;
+          saveLocalData(CUSTOMERS_KEY, customers);
+          return customer;
+        }
+        throw new Error('Cliente no encontrado');
       }
-      throw new Error('Cliente no encontrado');
+      throw error;
     }
-    return apiCall('customers', 'PUT', { phone, name });
   }
 };
 
-// Appointment API - Local Storage fallback for development
+// Appointment API
 export const appointmentApi = {
   // Create new appointment
   async create(data) {
-    if (!USE_NETLIFY) {
-      const appointments = getLocalData(APPOINTMENTS_KEY);
-      const newAppointment = {
-        _id: generateId(),
-        ...data,
-        createdAt: new Date().toISOString()
-      };
-      appointments.push(newAppointment);
-      saveLocalData(APPOINTMENTS_KEY, appointments);
-      return newAppointment;
+    try {
+      return await apiCall('appointments', 'POST', data);
+    } catch (error) {
+      if (error.message === 'MONGODB_FALLBACK') {
+        const appointments = getLocalData(APPOINTMENTS_KEY);
+        const newAppointment = {
+          _id: generateId(),
+          ...data,
+          createdAt: new Date().toISOString()
+        };
+        appointments.push(newAppointment);
+        saveLocalData(APPOINTMENTS_KEY, appointments);
+        return newAppointment;
+      }
+      throw error;
     }
-    
-    return apiCall('appointments', 'POST', data);
   },
 
   // Create appointment from admin
@@ -200,55 +232,75 @@ export const appointmentApi = {
 
   // Get appointment by ID
   async getById(id) {
-    if (!USE_NETLIFY) {
-      const appointments = getLocalData(APPOINTMENTS_KEY);
-      return appointments.find(a => a._id === id) || null;
+    try {
+      return await apiCall(`appointments?id=${encodeURIComponent(id)}`);
+    } catch (error) {
+      if (error.message === 'MONGODB_FALLBACK') {
+        const appointments = getLocalData(APPOINTMENTS_KEY);
+        return appointments.find(a => a._id === id) || null;
+      }
+      throw error;
     }
-    return apiCall(`appointments?id=${encodeURIComponent(id)}`);
   },
 
   // Get appointments by phone
   async getByPhone(phone) {
-    if (!USE_NETLIFY) {
-      const appointments = getLocalData(APPOINTMENTS_KEY);
-      return appointments.filter(a => a.customerPhone === phone);
+    try {
+      return await apiCall(`appointments?phone=${encodeURIComponent(phone)}`);
+    } catch (error) {
+      if (error.message === 'MONGODB_FALLBACK') {
+        const appointments = getLocalData(APPOINTMENTS_KEY);
+        return appointments.filter(a => a.customerPhone === phone);
+      }
+      throw error;
     }
-    return apiCall(`appointments?phone=${encodeURIComponent(phone)}`);
   },
 
   // Get all appointments (admin)
   async getAll() {
-    if (!USE_NETLIFY) {
-      return getLocalData(APPOINTMENTS_KEY);
+    try {
+      return await apiCall('appointments');
+    } catch (error) {
+      if (error.message === 'MONGODB_FALLBACK') {
+        return getLocalData(APPOINTMENTS_KEY);
+      }
+      throw error;
     }
-    return apiCall('appointments');
   },
 
   // Get appointments by date (admin)
   async getByDate(date) {
-    if (!USE_NETLIFY) {
-      const appointments = getLocalData(APPOINTMENTS_KEY);
-      return appointments.filter(a => {
-        const aptDate = new Date(a.appointmentDate).toISOString().split('T')[0];
-        return aptDate === date;
-      });
+    try {
+      return await apiCall(`appointments?date=${encodeURIComponent(date)}`);
+    } catch (error) {
+      if (error.message === 'MONGODB_FALLBACK') {
+        const appointments = getLocalData(APPOINTMENTS_KEY);
+        return appointments.filter(a => {
+          const aptDate = new Date(a.appointmentDate).toISOString().split('T')[0];
+          return aptDate === date;
+        });
+      }
+      throw error;
     }
-    return apiCall(`appointments?date=${encodeURIComponent(date)}`);
   },
 
   // Update appointment
   async update(id, data) {
-    if (!USE_NETLIFY) {
-      const appointments = getLocalData(APPOINTMENTS_KEY);
-      const index = appointments.findIndex(a => a._id === id);
-      if (index !== -1) {
-        appointments[index] = { ...appointments[index], ...data };
-        saveLocalData(APPOINTMENTS_KEY, appointments);
-        return appointments[index];
+    try {
+      return await apiCall('appointments', 'PUT', { id, ...data });
+    } catch (error) {
+      if (error.message === 'MONGODB_FALLBACK') {
+        const appointments = getLocalData(APPOINTMENTS_KEY);
+        const index = appointments.findIndex(a => a._id === id);
+        if (index !== -1) {
+          appointments[index] = { ...appointments[index], ...data };
+          saveLocalData(APPOINTMENTS_KEY, appointments);
+          return appointments[index];
+        }
+        throw new Error('Cita no encontrada');
       }
-      throw new Error('Cita no encontrada');
+      throw error;
     }
-    return apiCall('appointments', 'PUT', { id, ...data });
   },
 
   // Cancel appointment
@@ -269,5 +321,13 @@ export const appointmentApi = {
   // Mark as completed
   async complete(id) {
     return this.update(id, { status: 'completed' });
+  }
+};
+
+// Payment API
+export const paymentApi = {
+  // Create Stripe checkout session
+  async createCheckoutSession(data) {
+    return apiCall('payment', 'POST', data);
   }
 };
