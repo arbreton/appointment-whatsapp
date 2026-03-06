@@ -1,6 +1,7 @@
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+import Stripe from 'stripe';
 
-exports.handler = async (event, context) => {
+export const handler = async (event, context) => {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
   const { httpMethod, body } = event;
 
   // Add CORS headers

@@ -1,15 +1,5 @@
-import { describe, it, expect, vi } from 'vitest';
-// We'll mock mongodb if needed, but normalizeMongoDoc mostly handles plain objects or objects with specific properties
-// In the actual db.js, it uses 'instanceof ObjectId'. For the test, we can simulate the structure.
-
-// Since the project is "type": "module", we might need to be careful with require in tests
-// But vitest handles both. Let's try to import the function.
-// Note: db.js uses module.exports, so we import the default or use createRequire
-
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-const { normalizeMongoDoc } = require('../../netlify/functions/db.cjs');
-const { ObjectId } = require('mongodb');
+import { describe, it, expect } from 'vitest';
+import { normalizeMongoDoc, ObjectId } from '../../netlify/functions/db.js';
 
 describe('normalizeMongoDoc', () => {
     it('should return null if input is null', () => {

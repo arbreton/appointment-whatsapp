@@ -1,7 +1,8 @@
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const { connectToDatabase, MONGODB_DB, normalizeMongoDoc, ObjectId } = require('./db.cjs');
+import Stripe from 'stripe';
+import { connectToDatabase, MONGODB_DB, normalizeMongoDoc, ObjectId } from './db.js';
 
-exports.handler = async (event, context) => {
+export const handler = async (event, context) => {
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
     const { httpMethod, body } = event;
 
     const headers = {

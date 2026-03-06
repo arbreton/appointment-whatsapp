@@ -1,21 +1,18 @@
-const { MongoClient, ObjectId } = require('mongodb');
+import { MongoClient, ObjectId } from 'mongodb';
 
 const MONGODB_URI = process.env.MONGODB_URI || '';
 const MONGODB_DB = process.env.MONGODB_DB || 'cafe_encanta_nails';
 
 let cachedClient = null;
 
-async function connectToDatabase() {
+export async function connectToDatabase() {
   if (cachedClient) {
     return cachedClient;
   }
 
   try {
     console.log('Connecting to MongoDB...');
-    const client = new MongoClient(MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    const client = new MongoClient(MONGODB_URI);
 
     await client.connect();
     console.log('Connected to MongoDB');
@@ -28,7 +25,7 @@ async function connectToDatabase() {
 }
 
 // Helper to convert MongoDB documents (with ObjectId, $date, etc.) to plain JS objects
-const normalizeMongoDoc = (doc) => {
+export const normalizeMongoDoc = (doc) => {
   if (!doc) return null;
 
   // Create a deep copy to avoid mutating the original
@@ -68,4 +65,4 @@ const normalizeMongoDoc = (doc) => {
   return normalized;
 };
 
-module.exports = { connectToDatabase, MONGODB_DB, normalizeMongoDoc, ObjectId };
+export { MONGODB_DB, ObjectId };

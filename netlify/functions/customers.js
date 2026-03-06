@@ -1,4 +1,4 @@
-const { connectToDatabase, MONGODB_DB, normalizeMongoDoc } = require('./db.cjs');
+import { connectToDatabase, MONGODB_DB, normalizeMongoDoc } from './db.js';
 
 // Helper to normalize array of MongoDB documents
 const normalizeMongoDocs = (docs) => {
@@ -6,7 +6,7 @@ const normalizeMongoDocs = (docs) => {
   return docs.map(normalizeMongoDoc);
 };
 
-exports.handler = async (event, context) => {
+export const handler = async (event, context) => {
   const { httpMethod, queryStringParameters, body } = event;
 
   // Add CORS headers
@@ -26,7 +26,7 @@ exports.handler = async (event, context) => {
     const customers = db.collection('customers');
 
     if (httpMethod === 'GET') {
-      const { phone } = queryStringParameters;
+      const { phone } = queryStringParameters || {};
 
       if (phone) {
         const customer = await customers.findOne({ phone });

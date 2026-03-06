@@ -1,4 +1,4 @@
-const { connectToDatabase, MONGODB_DB, normalizeMongoDoc, ObjectId } = require('./db.cjs');
+import { connectToDatabase, MONGODB_DB, normalizeMongoDoc, ObjectId } from './db.js';
 
 // Helper to normalize array of MongoDB documents
 const normalizeMongoDocs = (docs) => {
@@ -6,7 +6,7 @@ const normalizeMongoDocs = (docs) => {
   return docs.map(normalizeMongoDoc);
 };
 
-exports.handler = async (event, context) => {
+export const handler = async (event, context) => {
   const { httpMethod, queryStringParameters, body } = event;
 
   // Add CORS headers
@@ -26,12 +26,11 @@ exports.handler = async (event, context) => {
     const appointments = db.collection('appointments');
 
     if (httpMethod === 'GET') {
-      const { phone, id, date } = queryStringParameters;
+      const { phone, id, date } = queryStringParameters || {};
 
       if (id) {
         try {
-          // Validate if it's a valid ObjectId hex string
-          if (id.length === 24 && ObjectId.isValid(id)) { // Added ObjectId.isValid check
+          if (id.length === 24 && ObjectId.isValid(id)) {
             const appointment = await appointments.findOne({ _id: new ObjectId(id) });
             return {
               statusCode: 200,
@@ -39,7 +38,6 @@ exports.handler = async (event, context) => {
               body: JSON.stringify(normalizeMongoDoc(appointment))
             };
           } else {
-            // Try as string ID (though in this app they are usually ObjectIds)
             const appointment = await appointments.findOne({ _id: id });
             return {
               statusCode: 200,
@@ -67,7 +65,6 @@ exports.handler = async (event, context) => {
       }
 
       if (date) {
-        // Get appointments for a specific date
         const startOfDay = new Date(date);
         startOfDay.setHours(0, 0, 0, 0);
         const endOfDay = new Date(date);
@@ -135,7 +132,6 @@ exports.handler = async (event, context) => {
 
       const updateData = { updatedAt: new Date() };
 
-      // Only update allowed fields
       if (data.status) updateData.status = data.status;
       if (data.paymentStatus) updateData.paymentStatus = data.paymentStatus;
       if (data.paidAmount !== undefined) updateData.paidAmount = data.paidAmount;
@@ -165,7 +161,7 @@ exports.handler = async (event, context) => {
     }
 
     if (httpMethod === 'DELETE') {
-      const { id } = queryStringParameters;
+      const { id } = queryStringParameters || {};
 
       if (!id) {
         return {
