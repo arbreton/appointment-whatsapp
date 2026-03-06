@@ -13,22 +13,26 @@ export default function CustomerLogin({ onLogin }) {
   // Pre-fill phone from URL and try auto-login
   useEffect(() => {
     const refPhone = searchParams.get('loginref') || searchParams.get('ref')
-    if (refPhone) {
+    const refPin = searchParams.get('p')
+    if (refPhone && refPin) {
       setPhone(refPhone)
-      // Try auto-login without PIN
-      handleAutoLogin(refPhone)
+      // Try auto-login with PIN from URL
+      handleAutoLogin(refPhone, refPin)
+    } else if (refPhone) {
+      setPhone(refPhone)
+      // Just pre-fill phone, user must enter PIN
     }
   }, [searchParams])
 
-  const handleAutoLogin = async (phoneNumber) => {
+  const handleAutoLogin = async (phoneNumber, pinValue) => {
     setLoading(true)
     try {
-      const customer = await customerApi.autoLogin(phoneNumber)
+      const customer = await customerApi.autoLogin(phoneNumber, pinValue)
       onLogin(customer)
       navigate('/dashboard')
     } catch (err) {
       console.error('Auto-login failed:', err)
-      // Keep phone filled, user will need to enter PIN
+      // Keep phone filled, user will need to enter PIN manually
       setLoading(false)
     }
   }

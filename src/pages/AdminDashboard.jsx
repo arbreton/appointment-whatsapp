@@ -208,7 +208,9 @@ export default function AdminDashboard({ admin, onLogout }) {
   const generateLoginLink = (phone) => {
     const siteUrl = window.location.origin
     const phoneToUse = phone || customerPhone
-    return `${siteUrl}/login?loginref=${encodeURIComponent(phoneToUse)}`
+    const customer = allCustomers.find(c => c.phone === phoneToUse)
+    const pinParam = customer ? `&p=${customer.pin}` : ''
+    return `${siteUrl}/login?loginref=${encodeURIComponent(phoneToUse)}${pinParam}`
   }
 
   const generateBookingLink = async () => {
@@ -227,13 +229,15 @@ export default function AdminDashboard({ admin, onLogout }) {
     }
 
     // Generate link that auto-logs in and goes to booking
-    const link = `${siteUrl}/login?loginref=${encodeURIComponent(customerPhone)}&redirectTo=/book`
+    const link = `${siteUrl}/login?loginref=${encodeURIComponent(customerPhone)}&p=${customer.pin}&redirectTo=/book`
     setWhatsappLink(link)
   }
 
   const generatePaymentLink = (appointment) => {
     const siteUrl = window.location.origin
-    return `${siteUrl}/appointment/${appointment._id}?loginref=${encodeURIComponent(appointment.customerPhone)}`
+    const customer = allCustomers.find(c => c.phone === appointment.customerPhone)
+    const pinParam = customer ? `&p=${customer.pin}` : ''
+    return `${siteUrl}/appointment/${appointment._id}?loginref=${encodeURIComponent(appointment.customerPhone)}${pinParam}`
   }
 
   const sendWhatsAppMessage = (phone, message) => {

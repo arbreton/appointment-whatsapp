@@ -60,7 +60,9 @@ export default function CustomerManagement({ admin, onLogout }) {
 
   const generateLoginLink = (phone) => {
     const siteUrl = window.location.origin
-    return `${siteUrl}/login?loginref=${encodeURIComponent(phone)}`
+    const customer = customers.find(c => c.phone === phone)
+    const pinParam = customer ? `&p=${customer.pin}` : ''
+    return `${siteUrl}/login?loginref=${encodeURIComponent(phone)}${pinParam}`
   }
 
   const filteredCustomers = searchPhone
@@ -122,8 +124,8 @@ export default function CustomerManagement({ admin, onLogout }) {
             <button
               onClick={() => setShowAllPins(!showAllPins)}
               className={`px-6 py-3 rounded-xl font-semibold transition-all ${showAllPins
-                  ? 'bg-pink-500 text-white shadow-lg shadow-pink-300'
-                  : 'bg-pink-100 text-pink-600 hover:bg-pink-200'
+                ? 'bg-pink-500 text-white shadow-lg shadow-pink-300'
+                : 'bg-pink-100 text-pink-600 hover:bg-pink-200'
                 }`}
             >
               {showAllPins ? '🙈 Ocultar PINs' : '👁️ Mostrar PINs'}

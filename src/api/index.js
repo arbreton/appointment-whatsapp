@@ -137,9 +137,10 @@ export const customerApi = {
     }
   },
 
-  // Auto-login from link (without PIN)
-  async autoLogin(phone) {
-    return this.login(phone);
+  // Auto-login from link (with PIN for security)
+  async autoLogin(phone, pin) {
+    if (!pin) throw new Error('PIN requerido para auto-login');
+    return this.login(phone, pin);
   },
 
   // Update PIN
