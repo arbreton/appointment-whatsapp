@@ -79,7 +79,7 @@ export default function CustomerManagement({ admin, onLogout }) {
               <span className="text-4xl">💅✨</span>
               <div>
                 <h1 className="text-2xl font-bold">Gestión de Clientes</h1>
-                <p className="text-pink-100 text-sm">Café Encanta Nails</p>
+                <p className="text-pink-100 text-sm">Fresia Aesthetic</p>
               </div>
             </div>
             <div className="flex items-center gap-3">

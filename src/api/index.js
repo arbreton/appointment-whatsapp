@@ -1,4 +1,4 @@
-// API for Cafe Encenta Nails
+// API for Fresia Aesthetic
 // Uses Netlify Functions to connect to MongoDB
 // Falls back to localStorage only if MongoDB is unavailable (development only)
 

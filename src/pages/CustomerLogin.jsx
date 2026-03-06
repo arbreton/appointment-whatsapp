@@ -68,7 +68,7 @@ export default function CustomerLogin({ onLogin }) {
             <span className="text-5xl sm:text-6xl">💅✨</span>
           </div>
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-pink-500 via-rose-500 to-fuchsia-500 bg-clip-text text-transparent px-2">
-            Cafe Encanta Nails
+            Fresia Aesthetic
           </h1>
           <p className="text-gray-600 mt-2 sm:mt-3 text-base sm:text-lg px-4">Ingresa tu número y PIN para continuar</p>
         </div>

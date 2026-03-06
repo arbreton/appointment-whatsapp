@@ -124,7 +124,7 @@ export default function CustomerDashboard({ customer, onLogout }) {
             <div className="flex items-center gap-2 sm:gap-3">
               <span className="text-2xl sm:text-3xl">💅✨</span>
               <div className="min-w-0">
-                <h1 className="text-base sm:text-xl font-bold truncate">Cafe Encanta Nails</h1>
+                <h1 className="text-base sm:text-xl font-bold truncate">Fresia Aesthetic</h1>
                 <p className="text-pink-100 text-xs sm:text-sm truncate">Bienvenida, {customer.name}</p>
               </div>
             </div>

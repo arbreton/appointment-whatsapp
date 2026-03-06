@@ -691,7 +691,7 @@ export default function AdminDashboard({ admin, onLogout }) {
         ) : getFilteredAppointments().length === 0 ? (
           <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-12 text-center border border-pink-100">
             <span className="text-6xl">📅</span>
-            <p className="text-gray-500 mt-4">No se encontraron citas</p>
+            <p className="text-pink-100 text-sm">Fresia Aesthetic</p>
           </div>
         ) : viewMode === 'calendar' ? (
           /* Calendar View */

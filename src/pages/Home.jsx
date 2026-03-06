@@ -21,7 +21,7 @@ export default function Home() {
             <span className="text-5xl sm:text-6xl md:text-7xl">💅✨</span>
           </div>
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-pink-500 via-rose-500 to-fuchsia-500 bg-clip-text text-transparent mb-4 sm:mb-6 drop-shadow-lg px-2">
-            Cafe Encanta Nails
+            Fresia Aesthetic
           </h1>
           <p className="text-lg sm:text-xl md:text-2xl text-gray-600 mb-6 sm:mb-8 max-w-2xl mx-auto px-2">
             Tus uñas perfectas, a solo un clic ✨
@@ -123,10 +123,10 @@ export default function Home() {
       {/* Footer */}
       <footer className="bg-gradient-to-r from-pink-400 via-rose-400 to-fuchsia-400 text-white py-6 sm:py-8 px-4">
         <div className="max-w-4xl mx-auto text-center px-2">
-          <p className="text-lg sm:text-xl font-bold mb-2">✨ Cafe Encanta Nails ✨</p>
+          <p className="text-lg sm:text-xl font-bold mb-2">✨ Fresia Aesthetic ✨</p>
           <p className="text-pink-100 text-sm sm:text-base">Tus uñas merecen lo mejor 💅</p>
           <p className="text-pink-100 text-xs sm:text-sm mt-3 sm:mt-4">
-            © 2024 Cafe Encanta Nails. Todos los derechos reservados.
+            © 2024 Fresia Aesthetic. Todos los derechos reservados.
           </p>
         </div>
       </footer>
