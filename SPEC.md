@@ -51,8 +51,8 @@
 
 ### Configuration (Environment Variables)
 ```
-MONGODB_URI=mongodb+srv://cafeencanta_db_user:zEy8snY3oKtiRKBc@cluster0.ucfamfc.mongodb.net/?appName=Cluster0
-STRIPE_PUBLISHABLE_KEY=pk_test_51SzVgOGlzdFcDvpPjje6hxQJJbxQpB1oInXAu3bO1WZX3RuQu25GIBxxgpRlCjdkrS6ICnzwE4kmFFExPlbjCbY700V8NxWVW5
+MONGODB_URI=
+STRIPE_PUBLISHABLE_KEY=
 STRIPE_SECRET_KEY=sk_test_xxx
 ADMIN_PASSWORD=admin123
 NETLIFY_SITE_URL=https://your-site.netlify.app (to be configured)

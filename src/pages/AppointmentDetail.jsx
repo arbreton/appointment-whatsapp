@@ -3,7 +3,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom'
 import { loadStripe } from '@stripe/stripe-js'
 import { appointmentApi } from '../api'
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_51SzVgOGlzdFcDvpPjje6hxQJJbxQpB1oInXAu3bO1WZX3RuQu25GIBxxgpRlCjdkrS6ICnzwE4kmFFExPlbjCbY700V8NxWVW5')
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '')
 
 export default function AppointmentDetail({ customer }) {
   const { id } = useParams()
