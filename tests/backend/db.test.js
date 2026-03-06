@@ -8,7 +8,7 @@ import { describe, it, expect, vi } from 'vitest';
 
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
-const { normalizeMongoDoc } = require('./db.cjs');
+const { normalizeMongoDoc } = require('../../netlify/functions/db.cjs');
 const { ObjectId } = require('mongodb');
 
 describe('normalizeMongoDoc', () => {
