@@ -205,7 +205,8 @@ export default function AdminDashboard({ admin, onLogout }) {
       month: 'short',
       day: 'numeric',
       hour: 'numeric',
-      minute: '2-digit'
+      minute: '2-digit',
+      hour12: true
     })
   }
 
@@ -293,7 +294,9 @@ export default function AdminDashboard({ admin, onLogout }) {
       }
 
       // Create appointment with date/time
-      const appointmentDate = `${newAppointment.date}T${newAppointment.time}:00`
+      const localDate = new Date(`${newAppointment.date}T${newAppointment.time}:00`)
+      const appointmentDate = localDate.toISOString()
+
       await appointmentApi.createFromAdmin(
         newAppointment.phone,
         newAppointment.name,
@@ -525,6 +528,7 @@ export default function AdminDashboard({ admin, onLogout }) {
               onChange={(e) => setNewAppointment({ ...newAppointment, time: e.target.value })}
               className="px-4 py-3 rounded-xl border-2 border-pink-200 focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all"
             >
+              <option value="08:00">08:00 AM</option>
               <option value="09:00">09:00 AM</option>
               <option value="10:00">10:00 AM</option>
               <option value="11:00">11:00 AM</option>
@@ -658,7 +662,7 @@ export default function AdminDashboard({ admin, onLogout }) {
                     <div key={apt._id} className="flex items-center gap-4 p-3 rounded-xl bg-pink-50/50 hover:bg-pink-100/50 transition-colors">
                       <div className="w-20 text-center">
                         <div className="text-lg font-bold text-pink-600">
-                          {new Date(apt.appointmentDate).toLocaleTimeString('es-ES', { hour: 'numeric', minute: '2-digit' })}
+                          {new Date(apt.appointmentDate).toLocaleTimeString('es-ES', { hour: 'numeric', minute: '2-digit', hour12: true })}
                         </div>
                       </div>
                       <div className="flex-1">

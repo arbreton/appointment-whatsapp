@@ -19,7 +19,7 @@ export default function BookAppointment({ customer }) {
   const serviceTypes = SERVICE_TYPES
 
   const timeSlots = [
-    '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'
+    '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'
   ]
 
   const handleChange = (e) => {
@@ -44,10 +44,13 @@ export default function BookAppointment({ customer }) {
     const selectedService = serviceTypes.find(s => s.id === formData.serviceType)
     const amount = selectedService ? selectedService.price : 0
 
+    // Create date in local time then convert to ISO
+    const localDate = new Date(`${formData.date}T${formData.time}:00`)
+
     const appointmentData = {
       customerPhone: customer.phone,
       customerName: customer.name,
-      appointmentDate: `${formData.date}T${formData.time}:00`,
+      appointmentDate: localDate.toISOString(),
       serviceType: selectedService ? selectedService.name : formData.serviceType,
       paymentType: formData.paymentType,
       amount: amount,
