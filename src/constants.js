@@ -1,7 +1,7 @@
 export const CURRENCY = 'mxn';
 export const CURRENCY_SYMBOL = '$';
 
-export const DEPOSIT_AMOUNT = 200;
+export const DEPOSIT_PERCENTAGE = 0.2;
 
 export const SERVICE_TYPES = [
     { id: 'manicure', name: 'Manicure', price: 250 },

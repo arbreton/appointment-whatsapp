@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { appointmentApi } from '../api'
-import { SERVICE_TYPES, DEPOSIT_AMOUNT } from '../constants'
+import { SERVICE_TYPES, DEPOSIT_PERCENTAGE } from '../constants'
 
 export default function BookAppointment({ customer }) {
   const [formData, setFormData] = useState({
@@ -52,7 +52,7 @@ export default function BookAppointment({ customer }) {
       paymentType: formData.paymentType,
       amount: amount,
       paidAmount: formData.paymentType === 'waitlist' ? 0 :
-        formData.paymentType === 'min_deposit' ? DEPOSIT_AMOUNT : amount,
+        formData.paymentType === 'min_deposit' ? Math.round(amount * DEPOSIT_PERCENTAGE) : amount,
       paymentStatus: formData.paymentType === 'waitlist' ? 'none' : 'pending_payment',
       status: formData.paymentType === 'waitlist' ? 'waitlist' : 'confirmed',
       notes: formData.notes
@@ -221,8 +221,8 @@ export default function BookAppointment({ customer }) {
                     className="mt-0.5 sm:mt-1"
                   />
                   <div className="ml-2 sm:ml-3">
-                    <div className="font-medium text-sm sm:text-base">Pagar Depósito Mínimo (${DEPOSIT_AMOUNT})</div>
-                    <div className="text-xs sm:text-sm text-gray-500">Asegura tu lugar con un depósito</div>
+                    <div className="font-medium text-sm sm:text-base">Pagar Depósito Mínimo (20%)</div>
+                    <div className="text-xs sm:text-sm text-gray-500">Asegura tu lugar con un depósito del 20%</div>
                   </div>
                 </label>
 
