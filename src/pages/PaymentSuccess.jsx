@@ -5,19 +5,20 @@ import { appointmentApi } from '../api'
 export default function PaymentSuccess() {
   const [searchParams] = useSearchParams()
   const [status, setStatus] = useState('processing')
+  const [appointmentId, setAppointmentId] = useState(null)
 
   useEffect(() => {
-    const sessionId = searchParams.get('session_id')
-    const appointmentId = searchParams.get('appointment_id')
+    const sId = searchParams.get('session_id')
+    const aId = searchParams.get('appointment_id')
 
-    if (sessionId && appointmentId) {
-      verifyAndUpdatePayment()
+    if (sId) {
+      verifyAndUpdatePayment(sId)
     } else {
       setStatus('error')
     }
   }, [searchParams])
 
-  const verifyAndUpdatePayment = async (sessionId) => { // sessionId passed as argument
+  const verifyAndUpdatePayment = async (sessionId) => {
     try {
       // Verify payment and create/update appointment via backend
       const response = await fetch('/.netlify/functions/verify-payment', {

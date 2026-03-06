@@ -41,6 +41,7 @@ export const handler = async (event, context) => {
             // Create new appointment
             const newDoc = {
                 ...appointmentData,
+                appointmentDate: appointmentData.appointmentDate ? new Date(appointmentData.appointmentDate) : new Date(),
                 amount: parseFloat(appointmentData.amount),
                 paidAmount: parseFloat(session.amount_total) / 100,
                 paymentStatus: parseFloat(session.amount_total) / 100 >= parseFloat(appointmentData.amount) ? 'paid' : 'partial',
