@@ -65,9 +65,15 @@ export const handler = async (event, context) => {
       }
 
       if (date) {
-        const startOfDay = new Date(date);
+        // Expand range to +/- 1 day to catch timezone-shifted appointments
+        const requestedDate = new Date(date);
+
+        const startOfDay = new Date(requestedDate);
+        startOfDay.setDate(startOfDay.getDate() - 1);
         startOfDay.setHours(0, 0, 0, 0);
-        const endOfDay = new Date(date);
+
+        const endOfDay = new Date(requestedDate);
+        endOfDay.setDate(endOfDay.getDate() + 1);
         endOfDay.setHours(23, 59, 59, 999);
 
         const dayAppointments = await appointments.find({

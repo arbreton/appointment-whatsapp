@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { appointmentApi } from '../api'
 import { SERVICE_TYPES, DEPOSIT_PERCENTAGE, TIME_SLOTS, APPOINTMENT_DURATION_MINS } from '../constants'
@@ -39,13 +39,16 @@ export default function BookAppointment({ customer }) {
   const isSlotAvailable = (time) => {
     if (!formData.date) return true
 
-    const slotTime = new Date(`${formData.date}T${time}:00`).getTime()
+    // Create a UTC timestamp for the slot to compare with stored UTC appointment dates
+    const slotDate = new Date(`${formData.date}T${time}:00`)
+    const slotTime = slotDate.getTime()
     const DURATION_MS = APPOINTMENT_DURATION_MINS * 60 * 1000
 
     return !appointments.some(apt => {
       const aptTime = new Date(apt.appointmentDate).getTime()
       // A slot is taken if an existing appointment starts within +/- 90 mins of the slot start
-      return Math.abs(slotTime - aptTime) < DURATION_MS && apt.status !== 'cancelled' && apt.status !== 'rejected'
+      const isOverlap = Math.abs(slotTime - aptTime) < DURATION_MS
+      return isOverlap && apt.status !== 'cancelled' && apt.status !== 'rejected'
     })
   }
 

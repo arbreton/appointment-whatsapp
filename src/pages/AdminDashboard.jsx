@@ -27,12 +27,16 @@ export default function AdminDashboard({ admin, onLogout }) {
   const isSlotAvailable = (time) => {
     if (!newAppointment.date) return true
 
-    const slotTime = new Date(`${newAppointment.date}T${time}:00`).getTime()
+    // Create a UTC timestamp for the slot to compare with stored UTC appointment dates
+    const slotDate = new Date(`${newAppointment.date}T${time}:00`)
+    const slotTime = slotDate.getTime()
     const DURATION_MS = APPOINTMENT_DURATION_MINS * 60 * 1000
 
     return !dayAppointments.some(apt => {
       const aptTime = new Date(apt.appointmentDate).getTime()
-      return Math.abs(slotTime - aptTime) < DURATION_MS && apt.status !== 'cancelled' && apt.status !== 'rejected'
+      // A slot is taken if an existing appointment starts within +/- 90 mins of the slot start
+      const isOverlap = Math.abs(slotTime - aptTime) < DURATION_MS
+      return isOverlap && apt.status !== 'cancelled' && apt.status !== 'rejected'
     })
   }
 
