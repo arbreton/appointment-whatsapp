@@ -1,8 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
-const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || ''
-
 export default function AdminLogin({ onLogin }) {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -15,9 +13,15 @@ export default function AdminLogin({ onLogin }) {
     setLoading(true)
 
     try {
-      // Simple password check
-      if (password === ADMIN_PASSWORD) {
-        onLogin({ role: 'admin', name: 'Admin' })
+      const response = await fetch('/.netlify/functions/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password })
+      })
+      const data = await response.json()
+      
+      if (data.success) {
+        onLogin({ role: 'admin', name: 'Admin', token: data.token })
         navigate('/admin/dashboard')
       } else {
         setError('Contraseña inválida')
