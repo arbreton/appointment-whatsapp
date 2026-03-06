@@ -1,4 +1,4 @@
-const { MongoClient } = require('mongodb');
+const { MongoClient, ObjectId } = require('mongodb');
 
 const MONGODB_URI = process.env.MONGODB_URI || '';
 const MONGODB_DB = process.env.MONGODB_DB || 'cafe_encanta_nails';
@@ -37,8 +37,8 @@ const normalizeMongoDoc = (doc) => {
   for (const key in doc) {
     const value = doc[key];
 
-    // Handle MongoDB ObjectId
-    if (value && typeof value === 'object' && value.toString().length === 24 && !value.$date) {
+    // Handle MongoDB ObjectId instance
+    if (value && (value instanceof ObjectId || (value._bsontype === 'ObjectID'))) {
       normalized[key] = value.toString();
     }
     // Handle MongoDB Extended JSON $oid
@@ -68,4 +68,4 @@ const normalizeMongoDoc = (doc) => {
   return normalized;
 };
 
-module.exports = { connectToDatabase, MONGODB_DB, normalizeMongoDoc };
+module.exports = { connectToDatabase, MONGODB_DB, normalizeMongoDoc, ObjectId };

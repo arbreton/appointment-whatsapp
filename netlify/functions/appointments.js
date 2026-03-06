@@ -30,19 +30,29 @@ exports.handler = async (event, context) => {
 
       if (id) {
         try {
-          const appointment = await appointments.findOne({ _id: require('mongodb').ObjectId(id) });
-          return {
-            statusCode: 200,
-            headers,
-            body: JSON.stringify(normalizeMongoDoc(appointment))
-          };
+          // Validate if it's a valid ObjectId hex string
+          if (id.length === 24 && ObjectId.isValid(id)) { // Added ObjectId.isValid check
+            const appointment = await appointments.findOne({ _id: new ObjectId(id) });
+            return {
+              statusCode: 200,
+              headers,
+              body: JSON.stringify(normalizeMongoDoc(appointment))
+            };
+          } else {
+            // Try as string ID (though in this app they are usually ObjectIds)
+            const appointment = await appointments.findOne({ _id: id });
+            return {
+              statusCode: 200,
+              headers,
+              body: JSON.stringify(normalizeMongoDoc(appointment))
+            };
+          }
         } catch (err) {
-          // Try finding by string _id if ObjectId fails
-          const appointment = await appointments.findOne({ _id: id });
+          console.error('Error finding appointment by ID:', err);
           return {
-            statusCode: 200,
+            statusCode: 404,
             headers,
-            body: JSON.stringify(normalizeMongoDoc(appointment))
+            body: JSON.stringify({ error: 'Cita no encontrada' })
           };
         }
       }
@@ -136,7 +146,7 @@ exports.handler = async (event, context) => {
 
       let objectId;
       try {
-        objectId = require('mongodb').ObjectId(id);
+        objectId = id.length === 24 ? new ObjectId(id) : id;
       } catch (err) {
         objectId = id;
       }
@@ -147,11 +157,7 @@ exports.handler = async (event, context) => {
       );
 
       let updated;
-      try {
-        updated = await appointments.findOne({ _id: require('mongodb').ObjectId(id) });
-      } catch (err) {
-        updated = await appointments.findOne({ _id: id });
-      }
+      const updated = await appointments.findOne({ _id: objectId });
       return {
         statusCode: 200,
         headers,
@@ -172,7 +178,7 @@ exports.handler = async (event, context) => {
 
       let deleteId;
       try {
-        deleteId = require('mongodb').ObjectId(id);
+        deleteId = id.length === 24 ? new ObjectId(id) : id;
       } catch (err) {
         deleteId = id;
       }
