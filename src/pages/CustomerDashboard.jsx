@@ -9,6 +9,7 @@ export default function CustomerDashboard({ customer, onLogout }) {
   const [changingPin, setChangingPin] = useState(false)
   const [newPin, setNewPin] = useState('')
   const [pinMessage, setPinMessage] = useState('')
+  const [activeTab, setActiveTab] = useState('active')
 
   useEffect(() => {
     fetchAppointments()
@@ -87,7 +88,7 @@ export default function CustomerDashboard({ customer, onLogout }) {
 
   const getPaymentText = (paymentStatus) => {
     const texts = {
-      none: 'Lista de espera', 
+      none: 'Lista de espera',
       partial: 'Depósito pagado',
       paid: 'Pagado',
       pending_payment: 'Pagar ahora'
@@ -103,6 +104,14 @@ export default function CustomerDashboard({ customer, onLogout }) {
       hour: 'numeric',
       minute: '2-digit'
     })
+  }
+
+  const getFilteredAppointments = () => {
+    if (activeTab === 'active') {
+      return appointments.filter(apt => apt.status !== 'cancelled' && apt.status !== 'completed')
+    } else {
+      return appointments.filter(apt => apt.status === 'cancelled' || apt.status === 'completed')
+    }
   }
 
   return (
@@ -142,7 +151,7 @@ export default function CustomerDashboard({ customer, onLogout }) {
           <h2 className="text-base sm:text-lg font-bold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent mb-3 sm:mb-4 flex items-center gap-2">
             🔐 Mi PIN de Acceso
           </h2>
-          
+
           <div className="flex flex-col gap-3 sm:gap-4">
             <div className="bg-gradient-to-r from-pink-100 to-rose-100 rounded-xl sm:rounded-2xl p-3 sm:p-4">
               <p className="text-gray-600 text-xs sm:text-sm mb-1">Tu PIN actual:</p>
@@ -163,14 +172,14 @@ export default function CustomerDashboard({ customer, onLogout }) {
                   className="px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 border-pink-200 focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all text-center font-mono text-lg sm:text-xl tracking-widest"
                 />
                 <div className="flex gap-2">
-                  <button 
-                    onClick={handleChangePIN} 
+                  <button
+                    onClick={handleChangePIN}
                     className="flex-1 bg-gradient-to-r from-pink-400 to-rose-400 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-semibold shadow-lg shadow-pink-200 hover:shadow-xl transition-all text-sm sm:text-base"
                   >
                     ✓ Guardar
                   </button>
-                  <button 
-                    onClick={() => { setChangingPin(false); setNewPin('') }} 
+                  <button
+                    onClick={() => { setChangingPin(false); setNewPin('') }}
                     className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all text-sm sm:text-base"
                   >
                     ✕
@@ -178,15 +187,15 @@ export default function CustomerDashboard({ customer, onLogout }) {
                 </div>
               </div>
             ) : (
-              <button 
-                onClick={() => setChangingPin(true)} 
+              <button
+                onClick={() => setChangingPin(true)}
                 className="bg-gradient-to-r from-pink-400 to-rose-400 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold shadow-lg shadow-pink-200 hover:shadow-xl transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
               >
                 🔄 Cambiar PIN
               </button>
             )}
           </div>
-          
+
           {pinMessage && (
             <p className="mt-2 sm:mt-3 text-green-600 font-medium flex items-center gap-2 text-sm">
               ✨ {pinMessage}
@@ -196,9 +205,31 @@ export default function CustomerDashboard({ customer, onLogout }) {
 
         {/* Appointments Section */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center gap-2">
-            📅 Mis Citas
-          </h1>
+          <div className="flex flex-col gap-2 w-full sm:w-auto">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center gap-2">
+              📅 Mis Citas
+            </h1>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setActiveTab('active')}
+                className={`text-sm px-4 py-1.5 rounded-full font-medium transition-all ${activeTab === 'active'
+                  ? 'bg-pink-500 text-white shadow-md'
+                  : 'bg-white text-gray-500 hover:bg-pink-50'
+                  }`}
+              >
+                Próximas
+              </button>
+              <button
+                onClick={() => setActiveTab('past')}
+                className={`text-sm px-4 py-1.5 rounded-full font-medium transition-all ${activeTab === 'past'
+                  ? 'bg-pink-500 text-white shadow-md'
+                  : 'bg-white text-gray-500 hover:bg-pink-50'
+                  }`}
+              >
+                Pasadas
+              </button>
+            </div>
+          </div>
           <Link
             to="/book"
             className="bg-gradient-to-r from-pink-400 to-rose-400 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto"
@@ -212,21 +243,27 @@ export default function CustomerDashboard({ customer, onLogout }) {
             <div className="inline-block animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-pink-500"></div>
             <p className="mt-3 sm:mt-4 text-pink-500 text-sm sm:text-base">Cargando citas...</p>
           </div>
-        ) : appointments.length === 0 ? (
+        ) : getFilteredAppointments().length === 0 ? (
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-xl p-8 sm:p-12 text-center border border-pink-100">
             <span className="text-5xl sm:text-7xl block mb-3 sm:mb-4">💅✨</span>
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-700 mb-2">Sin citas todavía</h2>
-            <p className="text-gray-500 mb-4 sm:mb-6 text-sm sm:text-base">¡Agenda tu primera cita ahora!</p>
-            <Link
-              to="/book"
-              className="inline-block bg-gradient-to-r from-pink-400 to-rose-400 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all text-sm sm:text-base"
-            >
-              ➕ Agendar Cita
-            </Link>
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-700 mb-2">
+              {activeTab === 'active' ? 'Sin citas próximas' : 'Sin citas pasadas'}
+            </h2>
+            <p className="text-gray-500 mb-4 sm:mb-6 text-sm sm:text-base">
+              {activeTab === 'active' ? '¡Agenda tu próxima visita hoy mismo!' : ''}
+            </p>
+            {activeTab === 'active' && (
+              <Link
+                to="/book"
+                className="inline-block bg-gradient-to-r from-pink-400 to-rose-400 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all text-sm sm:text-base"
+              >
+                ➕ Agendar Cita
+              </Link>
+            )}
           </div>
         ) : (
           <div className="space-y-3 sm:space-y-4">
-            {appointments.map((apt) => (
+            {getFilteredAppointments().map((apt) => (
               <div key={apt._id} className="bg-white/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-lg p-4 sm:p-5 border border-pink-100 hover:shadow-xl transition-all">
                 <div className="flex flex-col gap-3 sm:gap-4">
                   <div className="flex-1">

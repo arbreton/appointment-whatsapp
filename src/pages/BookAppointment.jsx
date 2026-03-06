@@ -60,7 +60,7 @@ export default function BookAppointment({ customer }) {
       amount: amount,
       paidAmount: formData.paymentType === 'waitlist' ? 0 :
         formData.paymentType === 'min_deposit' ? 10 : amount,
-      paymentStatus: formData.paymentType === 'waitlist' ? 'none' : 'partial',
+      paymentStatus: formData.paymentType === 'waitlist' ? 'none' : 'pending_payment',
       status: formData.paymentType === 'waitlist' ? 'waitlist' : 'confirmed',
       notes: formData.notes
     }
@@ -134,8 +134,8 @@ export default function BookAppointment({ customer }) {
                   <label
                     key={service.id}
                     className={`p-2.5 sm:p-3 border-2 rounded-lg sm:rounded-xl cursor-pointer transition-all ${formData.serviceType === service.id
-                        ? 'border-pink-400 bg-pink-50'
-                        : 'border-gray-200 hover:border-pink-200'
+                      ? 'border-pink-400 bg-pink-50'
+                      : 'border-gray-200 hover:border-pink-200'
                       }`}
                   >
                     <input
@@ -198,8 +198,8 @@ export default function BookAppointment({ customer }) {
               </label>
               <div className="space-y-2 sm:space-y-3">
                 <label className={`flex p-3 sm:p-4 border-2 rounded-lg sm:rounded-xl cursor-pointer transition-all ${formData.paymentType === 'waitlist'
-                    ? 'border-pink-400 bg-pink-50'
-                    : 'border-gray-200 hover:border-pink-200'
+                  ? 'border-pink-400 bg-pink-50'
+                  : 'border-gray-200 hover:border-pink-200'
                   }`}>
                   <input
                     type="radio"
@@ -216,8 +216,8 @@ export default function BookAppointment({ customer }) {
                 </label>
 
                 <label className={`flex p-3 sm:p-4 border-2 rounded-lg sm:rounded-xl cursor-pointer transition-all ${formData.paymentType === 'min_deposit'
-                    ? 'border-pink-400 bg-pink-50'
-                    : 'border-gray-200 hover:border-pink-200'
+                  ? 'border-pink-400 bg-pink-50'
+                  : 'border-gray-200 hover:border-pink-200'
                   }`}>
                   <input
                     type="radio"
@@ -234,8 +234,8 @@ export default function BookAppointment({ customer }) {
                 </label>
 
                 <label className={`flex p-3 sm:p-4 border-2 rounded-lg sm:rounded-xl cursor-pointer transition-all ${formData.paymentType === 'full'
-                    ? 'border-pink-400 bg-pink-50'
-                    : 'border-gray-200 hover:border-pink-200'
+                  ? 'border-pink-400 bg-pink-50'
+                  : 'border-gray-200 hover:border-pink-200'
                   }`}>
                   <input
                     type="radio"

@@ -48,7 +48,7 @@ exports.handler = async (event, context) => {
         },
       ],
       mode: 'payment',
-      success_url: `${siteUrl}/payment-success?session_id={CHECKOUT_SESSION_ID}&appointment_id=${String(appointmentId)}`,
+      success_url: `${siteUrl}/payment-success?session_id={CHECKOUT_SESSION_ID}&appointment_id=${String(appointmentId)}&amount=${amount}`,
       cancel_url: `${siteUrl}/appointment/${String(appointmentId)}`,
       metadata: {
         appointmentId: String(appointmentId),

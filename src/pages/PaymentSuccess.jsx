@@ -19,17 +19,21 @@ export default function PaymentSuccess() {
 
   const verifyAndUpdatePayment = async () => {
     const appointmentId = searchParams.get('appointment_id')
-    
+
     try {
       const appointment = await appointmentApi.getById(appointmentId)
-      
+
       if (appointment) {
+        const paidAmountArg = parseFloat(searchParams.get('amount')) || 0;
+        const totalPaid = (appointment.paidAmount || 0) + paidAmountArg;
+        const isFullyPaid = totalPaid >= appointment.amount;
+
         await appointmentApi.update(appointmentId, {
-          paymentStatus: 'paid',
-          paidAmount: appointment.amount,
+          paymentStatus: isFullyPaid ? 'paid' : 'partial',
+          paidAmount: totalPaid,
           paymentMethod: 'stripe'
         })
-        
+
         setStatus('success')
       } else {
         console.error('Appointment not found:', appointmentId)
