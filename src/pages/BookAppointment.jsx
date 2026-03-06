@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { appointmentApi } from '../api'
-import { SERVICE_TYPES, DEPOSIT_PERCENTAGE } from '../constants'
+import { SERVICE_TYPES, DEPOSIT_PERCENTAGE, TIME_SLOTS, APPOINTMENT_DURATION_MINS } from '../constants'
 
 export default function BookAppointment({ customer }) {
   const [formData, setFormData] = useState({
@@ -14,13 +14,40 @@ export default function BookAppointment({ customer }) {
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [appointments, setAppointments] = useState([])
   const navigate = useNavigate()
 
   const serviceTypes = SERVICE_TYPES
 
-  const timeSlots = [
-    '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'
-  ]
+  const timeSlots = TIME_SLOTS
+
+  useEffect(() => {
+    if (formData.date) {
+      fetchAppointmentsForDate(formData.date)
+    }
+  }, [formData.date])
+
+  const fetchAppointmentsForDate = async (date) => {
+    try {
+      const data = await appointmentApi.getByDate(date)
+      setAppointments(data || [])
+    } catch (err) {
+      console.error('Error fetching appointments for date:', err)
+    }
+  }
+
+  const isSlotAvailable = (time) => {
+    if (!formData.date) return true
+
+    const slotTime = new Date(`${formData.date}T${time}:00`).getTime()
+    const DURATION_MS = APPOINTMENT_DURATION_MINS * 60 * 1000
+
+    return !appointments.some(apt => {
+      const aptTime = new Date(apt.appointmentDate).getTime()
+      // A slot is taken if an existing appointment starts within +/- 90 mins of the slot start
+      return Math.abs(slotTime - aptTime) < DURATION_MS && apt.status !== 'cancelled' && apt.status !== 'rejected'
+    })
+  }
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -38,6 +65,12 @@ export default function BookAppointment({ customer }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+
+    if (!isSlotAvailable(formData.time)) {
+      setError('Este horario ya no está disponible. Por favor elige otro.')
+      return
+    }
+
     setError('')
     setLoading(true)
 
@@ -109,6 +142,8 @@ export default function BookAppointment({ customer }) {
     tomorrow.setDate(tomorrow.getDate() + 1)
     return tomorrow.toISOString().split('T')[0]
   }
+
+  const availableSlots = timeSlots.filter(isSlotAvailable)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-fuchsia-50 pb-8">
@@ -186,12 +221,16 @@ export default function BookAppointment({ customer }) {
                 className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 border-pink-200 focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all text-base bg-white"
                 required
               >
-                {timeSlots.map((time) => (
+                <option value="" disabled>Selecciona una hora</option>
+                {availableSlots.map((time) => (
                   <option key={time} value={time}>
                     {time}
                   </option>
                 ))}
               </select>
+              {availableSlots.length === 0 && formData.date && (
+                <p className="text-red-500 text-xs mt-1">No hay horarios disponibles para esta fecha.</p>
+              )}
             </div>
 
             {/* Payment Option */}

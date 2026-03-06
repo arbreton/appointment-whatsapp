@@ -35,26 +35,26 @@ function generatePIN() {
 // API call helper - always tries MongoDB first, falls back to localStorage in dev
 async function apiCall(endpoint, method = 'GET', body = null) {
   const url = `${FUNCTION_BASE}/.netlify/functions/${endpoint}`;
-  
+
   const options = {
     method,
     headers: {
       'Content-Type': 'application/json'
     }
   };
-  
+
   if (body) {
     options.body = JSON.stringify(body);
   }
-  
+
   try {
     const response = await fetch(url, options);
-    
+
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: 'Request failed' }));
       throw new Error(error.error || `HTTP ${response.status}`);
     }
-    
+
     return response.json();
   } catch (error) {
     // If it's a network error and we're in dev, fall back to localStorage
@@ -257,9 +257,9 @@ export const appointmentApi = {
   },
 
   // Get all appointments (admin)
-  async getAll() {
+  async getAll(status = 'all') {
     try {
-      return await apiCall('appointments');
+      return await apiCall(`appointments${status !== 'all' ? `?status=${status}` : ''}`);
     } catch (error) {
       if (error.message === 'MONGODB_FALLBACK') {
         return getLocalData(APPOINTMENTS_KEY);

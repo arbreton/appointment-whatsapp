@@ -1,12 +1,42 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { appointmentApi, customerApi } from '../api'
-import { SERVICE_TYPES, DEPOSIT_AMOUNT, PRICES } from '../constants'
+import { SERVICE_TYPES, DEPOSIT_AMOUNT, PRICES, TIME_SLOTS, APPOINTMENT_DURATION_MINS } from '../constants'
 
 export default function AdminDashboard({ admin, onLogout }) {
   const [appointments, setAppointments] = useState([])
+  const [dayAppointments, setDayAppointments] = useState([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
+
+  useEffect(() => {
+    if (newAppointment.date) {
+      fetchDayAppointments(newAppointment.date)
+    }
+  }, [newAppointment.date])
+
+  const fetchDayAppointments = async (date) => {
+    try {
+      const data = await appointmentApi.getByDate(date)
+      setDayAppointments(data || [])
+    } catch (err) {
+      console.error('Error fetching day appointments:', err)
+    }
+  }
+
+  const isSlotAvailable = (time) => {
+    if (!newAppointment.date) return true
+
+    const slotTime = new Date(`${newAppointment.date}T${time}:00`).getTime()
+    const DURATION_MS = APPOINTMENT_DURATION_MINS * 60 * 1000
+
+    return !dayAppointments.some(apt => {
+      const aptTime = new Date(apt.appointmentDate).getTime()
+      return Math.abs(slotTime - aptTime) < DURATION_MS && apt.status !== 'cancelled' && apt.status !== 'rejected'
+    })
+  }
+
+  const availableSlots = TIME_SLOTS.filter(isSlotAvailable)
 
   // Customer creation
   const [newCustomer, setNewCustomer] = useState({ phone: '', name: '' })
@@ -286,6 +316,11 @@ export default function AdminDashboard({ admin, onLogout }) {
       return
     }
 
+    if (!isSlotAvailable(newAppointment.time)) {
+      alert('Este horario ya no está disponible.')
+      return
+    }
+
     try {
       // Create or get customer
       let customer = await customerApi.getByPhone(newAppointment.phone)
@@ -528,18 +563,14 @@ export default function AdminDashboard({ admin, onLogout }) {
               onChange={(e) => setNewAppointment({ ...newAppointment, time: e.target.value })}
               className="px-4 py-3 rounded-xl border-2 border-pink-200 focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all"
             >
-              <option value="08:00">08:00 AM</option>
-              <option value="09:00">09:00 AM</option>
-              <option value="10:00">10:00 AM</option>
-              <option value="11:00">11:00 AM</option>
-              <option value="12:00">12:00 PM</option>
-              <option value="13:00">01:00 PM</option>
-              <option value="14:00">02:00 PM</option>
-              <option value="15:00">03:00 PM</option>
-              <option value="16:00">04:00 PM</option>
-              <option value="17:00">05:00 PM</option>
-              <option value="18:00">06:00 PM</option>
+              <option value="" disabled>Hora</option>
+              {availableSlots.map(time => (
+                <option key={time} value={time}>{time}</option>
+              ))}
             </select>
+            {availableSlots.length === 0 && newAppointment.date && (
+              <p className="text-red-500 text-xs mt-1 col-span-full">No hay horarios disponibles.</p>
+            )}
             <button
               onClick={handleCreateAppointment}
               className="bg-gradient-to-r from-pink-400 to-rose-400 text-white px-6 py-3 rounded-xl font-semibold shadow-lg shadow-pink-200 hover:shadow-xl transition-all"
