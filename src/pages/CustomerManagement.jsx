@@ -10,6 +10,8 @@ export default function CustomerManagement({ admin, onLogout }) {
   const [showAllPins, setShowAllPins] = useState(false)
   const [editingName, setEditingName] = useState(null)
   const [newName, setNewName] = useState('')
+  const [editingPhone, setEditingPhone] = useState(null)
+  const [newPhoneVal, setNewPhoneVal] = useState('')
 
   useEffect(() => {
     fetchCustomers()
@@ -49,6 +51,36 @@ export default function CustomerManagement({ admin, onLogout }) {
       setNewName('')
     } catch (err) {
       console.error('Error updating name:', err)
+      alert(err.message)
+    }
+  }
+
+  const handleEditPhone = async (oldPhone) => {
+    if (!newPhoneVal.trim() || newPhoneVal === oldPhone) {
+      setEditingPhone(null)
+      return
+    }
+    try {
+      const updated = await customerApi.updatePhone(oldPhone, newPhoneVal)
+      setCustomers(customers.map(c => c.phone === oldPhone ? { ...c, phone: updated.phone } : c))
+      setEditingPhone(null)
+      setNewPhoneVal('')
+    } catch (err) {
+      console.error('Error updating phone:', err)
+      alert(err.message)
+    }
+  }
+
+  const handleDeleteCustomer = async (phone, name) => {
+    if (!window.confirm(`¿Estás seguro de que deseas eliminar permanentemente a ${name}? Esta acción no se puede deshacer.`)) {
+      return
+    }
+    try {
+      await customerApi.delete(phone)
+      setCustomers(customers.filter(c => c.phone !== phone))
+    } catch (err) {
+      console.error('Error deleting customer:', err)
+      alert(err.message)
     }
   }
 
@@ -207,8 +239,24 @@ export default function CustomerManagement({ admin, onLogout }) {
                         )}
                       </td>
                       <td className="px-8 py-8">
-                        <div className="text-sm font-bold text-fresia-dark">{customer.phone}</div>
-                        <div className="text-[10px] uppercase tracking-widest text-fresia-dark/30">WhatsApp</div>
+                        {editingPhone === customer.phone ? (
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              value={newPhoneVal}
+                              onChange={(e) => setNewPhoneVal(e.target.value)}
+                              className="bg-white px-4 py-2 rounded-xl border border-fresia-gold/20 outline-none text-sm w-32"
+                              autoFocus
+                            />
+                            <button onClick={() => handleEditPhone(customer.phone)} className="text-green-500">✓</button>
+                            <button onClick={() => setEditingPhone(null)} className="text-red-400">✕</button>
+                          </div>
+                        ) : (
+                          <div>
+                            <div className="text-sm font-bold text-fresia-dark">{customer.phone}</div>
+                            <button onClick={() => { setEditingPhone(customer.phone); setNewPhoneVal(customer.phone) }} className="text-[8px] uppercase tracking-widest font-black text-fresia-rose opacity-40 hover:opacity-100">Editar Teléfono</button>
+                          </div>
+                        )}
                       </td>
                       <td className="px-8 py-8">
                         <div className="flex items-center gap-3">
@@ -223,7 +271,16 @@ export default function CustomerManagement({ admin, onLogout }) {
                       </td>
                       <td className="px-8 py-8">
                         <div className="flex gap-2">
-                          <button onClick={() => handleResetPIN(customer.phone)} className="p-3 bg-fresia-cream rounded-xl border border-fresia-gold/20 hover:bg-fresia-gold hover:text-white transition-all">🔄</button>
+                          <button onClick={() => handleResetPIN(customer.phone)} title="Resetear PIN" className="p-3 bg-fresia-cream rounded-xl border border-fresia-gold/20 hover:bg-fresia-gold hover:text-white transition-all">🔄</button>
+
+                          <button
+                            onClick={() => handleDeleteCustomer(customer.phone, customer.name)}
+                            title="Eliminar Cliente"
+                            className="p-3 bg-fresia-cream rounded-xl border border-fresia-gold/20 hover:bg-red-500 hover:text-white transition-all text-red-500"
+                          >
+                            🗑️
+                          </button>
+
                           <button
                             onClick={() => {
                               const link = generateLoginLink(customer.phone)

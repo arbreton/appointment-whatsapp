@@ -87,22 +87,64 @@ export const handler = async (event, context) => {
 
     if (httpMethod === 'PUT') {
       const data = JSON.parse(body);
-      const { phone, pin, name } = data;
+      const { phone, pin, name, newPhone } = data;
+
+      if (!phone) {
+        return { statusCode: 400, headers, body: JSON.stringify({ error: 'Phone is required for update' }) };
+      }
+
+      // If changing phone number, check if the new one is already taken
+      if (newPhone && newPhone !== phone) {
+        const existing = await customers.findOne({ phone: newPhone });
+        if (existing) {
+          return { statusCode: 400, headers, body: JSON.stringify({ error: 'El nuevo número ya está en uso' }) };
+        }
+      }
 
       const updateData = { updatedAt: new Date() };
       if (pin) updateData.pin = pin;
       if (name) updateData.name = name;
+      if (newPhone) updateData.phone = newPhone;
 
       await customers.updateOne(
         { phone },
         { $set: updateData }
       );
 
-      const updated = await customers.findOne({ phone });
+      // If phone number was changed, update all associated appointments
+      if (newPhone && newPhone !== phone) {
+        const appointments = db.collection('appointments');
+        await appointments.updateMany(
+          { customerPhone: phone },
+          { $set: { customerPhone: newPhone } }
+        );
+      }
+
+      const updated = await customers.findOne({ phone: newPhone || phone });
       return {
         statusCode: 200,
         headers,
         body: JSON.stringify(normalizeMongoDoc(updated))
+      };
+    }
+
+    if (httpMethod === 'DELETE') {
+      const { phone } = queryStringParameters || {};
+
+      if (!phone) {
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({ error: 'Phone is required' })
+        };
+      }
+
+      await customers.deleteOne({ phone });
+
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({ success: true })
       };
     }
 

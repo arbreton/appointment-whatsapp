@@ -191,6 +191,54 @@ export const customerApi = {
       }
       throw error;
     }
+  },
+
+  // Update customer phone (admin)
+  async updatePhone(phone, newPhone) {
+    try {
+      return await apiCall('customers', 'PUT', { phone, newPhone });
+    } catch (error) {
+      if (error.message === 'MONGODB_FALLBACK') {
+        const customers = getLocalData(CUSTOMERS_KEY);
+        const customer = customers.find(c => c.phone === phone);
+        if (!customer) throw new Error('Cliente no encontrado');
+
+        const existing = customers.find(c => c.phone === newPhone);
+        if (existing) throw new Error('El nuevo número ya está en uso');
+
+        customer.phone = newPhone;
+        saveLocalData(CUSTOMERS_KEY, customers);
+
+        // Update local appointments too
+        const appointments = getLocalData(APPOINTMENTS_KEY);
+        let updatedApts = false;
+        appointments.forEach(a => {
+          if (a.customerPhone === phone) {
+            a.customerPhone = newPhone;
+            updatedApts = true;
+          }
+        });
+        if (updatedApts) saveLocalData(APPOINTMENTS_KEY, appointments);
+
+        return customer;
+      }
+      throw error;
+    }
+  },
+
+  // Delete customer (admin)
+  async delete(phone) {
+    try {
+      return await apiCall(`customers?phone=${encodeURIComponent(phone)}`, 'DELETE');
+    } catch (error) {
+      if (error.message === 'MONGODB_FALLBACK') {
+        const customers = getLocalData(CUSTOMERS_KEY);
+        const filtered = customers.filter(c => c.phone !== phone);
+        saveLocalData(CUSTOMERS_KEY, filtered);
+        return { success: true };
+      }
+      throw error;
+    }
   }
 };
 
