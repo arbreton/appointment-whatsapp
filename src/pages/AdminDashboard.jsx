@@ -119,11 +119,14 @@ export default function AdminDashboard({ admin, onLogout }) {
         apt.status !== 'completed'
       )
     }
+    if (filter === 'cancelled' || filter === 'completed') {
+      return appointments.filter(apt => apt.status === filter)
+    }
     return appointments.filter(apt => apt.status === filter)
   }
 
   const getAppointmentsByDate = () => {
-    const filtered = getFilteredAppointments()
+    const filtered = appointments.filter(apt => apt.status !== 'cancelled' && apt.status !== 'rejected')
     const grouped = {}
     filtered.forEach(apt => {
       const date = new Date(apt.appointmentDate).toISOString().split('T')[0]
@@ -500,13 +503,13 @@ export default function AdminDashboard({ admin, onLogout }) {
             <h1 className="text-5xl font-serif text-fresia-dark font-bold">Resumen Fresia</h1>
           </div>
           <div className="flex gap-2 p-1 bg-white/50 backdrop-blur-sm rounded-2xl border border-fresia-gold/10">
-            {['all', 'pending', 'confirmed'].map(k => (
+            {['all', 'pending', 'confirmed', 'completed', 'cancelled'].map(k => (
               <button
                 key={k}
                 onClick={() => setFilter(k)}
-                className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === k ? 'bg-fresia-dark text-white shadow-lg' : 'text-fresia-dark/40 hover:text-fresia-dark/60'}`}
+                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === k ? 'bg-fresia-dark text-white shadow-lg' : 'text-fresia-dark/40 hover:text-fresia-dark/60'}`}
               >
-                {k === 'pending' ? 'Por Atender' : k}
+                {k === 'pending' ? 'Pendientes' : k === 'all' ? 'Todas' : k === 'confirmed' ? 'Confirmadas' : k === 'completed' ? 'Historial' : 'Canceladas'}
               </button>
             ))}
           </div>
@@ -570,6 +573,8 @@ export default function AdminDashboard({ admin, onLogout }) {
                 <option value="all">Todas</option>
                 <option value="pending">Pendientes</option>
                 <option value="confirmed">Confirmadas</option>
+                <option value="completed">Historial / Completadas</option>
+                <option value="cancelled">Canceladas</option>
               </select>
             </div>
 
@@ -644,7 +649,7 @@ export default function AdminDashboard({ admin, onLogout }) {
                 .filter(c => c.name.toLowerCase().includes(customerSearch.toLowerCase()) || c.phone.includes(customerSearch))
                 .slice(0, 20)
                 .map(c => (
-                  <div key={c._id} className="glass-card rounded-3xl p-6 border-white/50 flex items-center justify-between group hover:border-fresia-gold/30 transition-all">
+                  <div key={c._id} className="glass-card rounded-3xl p-6 border-white/50 flex flex-col gap-6 group hover:border-fresia-gold/30 transition-all">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-full bg-fresia-dark text-fresia-gold flex items-center justify-center font-serif text-xl shadow-lg">
                         {c.name.charAt(0)}
@@ -658,47 +663,52 @@ export default function AdminDashboard({ admin, onLogout }) {
                         </div>
                       </div>
                     </div>
-                    <div className="flex gap-2">
+
+                    <div className="flex flex-wrap gap-2 pt-4 border-t border-fresia-gold/5">
                       <button
                         onClick={() => {
                           const msg = prompt("Mensaje personalizado:");
                           if (msg) sendWhatsAppMessage(c.phone, msg);
                         }}
-                        className="w-10 h-10 bg-green-50 text-green-600 rounded-xl flex items-center justify-center hover:bg-green-600 hover:text-white transition-all shadow-sm"
+                        className="flex-1 py-3 bg-green-50 text-green-600 rounded-xl flex items-center justify-center gap-2 hover:bg-green-600 hover:text-white transition-all shadow-sm text-[10px] font-black uppercase tracking-widest"
                         title="WhatsApp"
                       >
-                        📱
+                        <span>📱</span> WhatsApp
                       </button>
-                      <button
-                        onClick={() => { const link = generateLoginLink(c.phone); copyLink(link); }}
-                        className="w-10 h-10 bg-fresia-gold/10 text-fresia-gold rounded-xl flex items-center justify-center hover:bg-fresia-gold hover:text-white transition-all shadow-sm text-xs"
-                        title="Copiar Link Acceso"
-                      >
-                        🔗
-                      </button>
+
                       <button
                         onClick={() => {
                           const link = generateLoginLink(c.phone);
                           sendWhatsAppMessage(c.phone, `Hola ${c.name}, este es tu link de acceso al portal: ${link}`);
                         }}
-                        className="w-10 h-10 bg-fresia-dark text-fresia-gold rounded-xl flex items-center justify-center hover:bg-fresia-gold hover:text-fresia-dark transition-all shadow-sm text-xs"
+                        className="flex-1 py-3 bg-fresia-dark text-fresia-gold rounded-xl flex items-center justify-center gap-2 hover:bg-fresia-gold hover:text-fresia-dark transition-all shadow-sm text-[10px] font-black uppercase tracking-widest"
                         title="Notificar Link"
                       >
-                        📢
+                        <span>📢</span> Link
                       </button>
+
+                      <button
+                        onClick={() => { const link = generateLoginLink(c.phone); copyLink(link); }}
+                        className="w-12 h-12 bg-fresia-gold/10 text-fresia-gold rounded-xl flex items-center justify-center hover:bg-fresia-gold hover:text-white transition-all shadow-sm text-xs"
+                        title="Copiar Link Acceso"
+                      >
+                        🔗
+                      </button>
+
                       <button
                         onClick={() => {
                           const newPhone = prompt("Nuevo teléfono:", c.phone);
                           if (newPhone) handleEditPhone(c.phone, newPhone);
                         }}
-                        className="w-8 h-8 bg-gray-50 text-fresia-dark/30 rounded-lg flex items-center justify-center text-[10px] self-center"
+                        className="w-12 h-12 bg-gray-50 text-fresia-dark/30 rounded-xl flex items-center justify-center text-[10px] hover:text-fresia-dark transition-all"
                         title="Editar"
                       >
                         ✎
                       </button>
+
                       <button
                         onClick={() => handleDeleteCustomer(c.phone, c.name)}
-                        className="w-8 h-8 bg-red-50 text-red-300 rounded-lg flex items-center justify-center text-[10px] self-center hover:bg-red-500 hover:text-white"
+                        className="w-12 h-12 bg-red-50 text-red-300 rounded-xl flex items-center justify-center text-[10px] hover:bg-red-500 hover:text-white transition-all"
                         title="Eliminar"
                       >
                         🗑
