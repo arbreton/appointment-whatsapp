@@ -111,7 +111,7 @@ export default function AdminDashboard({ admin, onLogout }) {
   }
 
   const getFilteredAppointments = () => {
-    if (filter === 'all') return appointments.filter(apt => apt.status !== 'cancelled')
+    if (filter === 'all') return appointments
     if (filter === 'pending') {
       return appointments.filter(apt =>
         (apt.status === 'waitlist' || apt.status === 'confirmed') &&
@@ -177,8 +177,34 @@ export default function AdminDashboard({ admin, onLogout }) {
       alert('¡Cliente registrado!')
     } catch (err) {
       console.error('Error creating customer:', err)
+      alert('Error: ' + err.message)
     } finally {
       setCreatingCustomer(false)
+    }
+  }
+
+  const handleDeleteCustomer = async (phone, name) => {
+    if (!window.confirm(`¿Eliminar permanentemente a ${name}?`)) return
+    try {
+      await customerApi.delete(phone)
+      setAllCustomers(allCustomers.filter(c => c.phone !== phone))
+      alert('Cliente eliminado')
+    } catch (err) {
+      console.error('Error:', err)
+      alert('Error: ' + err.message)
+    }
+  }
+
+  const handleEditPhone = async (oldPhone, newPhone) => {
+    if (!newPhone || oldPhone === newPhone) return
+    try {
+      await customerApi.updatePhone(oldPhone, newPhone)
+      const customers = await customerApi.getAll()
+      setAllCustomers(customers || [])
+      alert('Teléfono actualizado')
+    } catch (err) {
+      console.error('Error:', err)
+      alert('Error: ' + err.message)
     }
   }
 
@@ -246,6 +272,21 @@ export default function AdminDashboard({ admin, onLogout }) {
       pending_payment: 'Por pagar'
     }
     return texts[paymentStatus] || paymentStatus
+  }
+
+  const updatePaymentStatus = async (appointmentId, newPaymentStatus, paidAmount = null) => {
+    try {
+      const updateData = { paymentStatus: newPaymentStatus }
+      if (paidAmount !== null) updateData.paidAmount = paidAmount
+      await appointmentApi.update(appointmentId, updateData)
+      setAppointments(appointments.map(apt =>
+        apt._id === appointmentId ? { ...apt, ...updateData } : apt
+      ))
+      alert('Pago actualizado')
+    } catch (err) {
+      console.error('Error:', err)
+      alert('Error updating payment')
+    }
   }
 
   const copyLink = (link) => {
@@ -548,13 +589,20 @@ export default function AdminDashboard({ admin, onLogout }) {
                       <span className={`px-3 py-1 rounded-full text-[8px] uppercase tracking-widest font-black ${getStatusBadge(apt.status)}`}>{getStatusText(apt.status)}</span>
                     </div>
 
-                    <div className="flex items-center justify-between pt-4 border-t border-fresia-gold/5">
-                      <div className="flex items-center gap-3">
-                        <div className="text-sm font-bold text-fresia-dark">${apt.amount}</div>
-                        <div className={`text-[8px] font-black uppercase tracking-widest ${apt.paymentStatus === 'paid' ? 'text-green-600' : 'text-fresia-gold'}`}>{getPaymentText(apt.paymentStatus)}</div>
+                    <div className="flex items-center justify-between pt-4 border-t border-fresia-gold/5 mt-4">
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-3">
+                          <div className="text-sm font-bold text-fresia-dark">${apt.amount}</div>
+                          <div className={`text-[8px] font-black uppercase tracking-widest ${apt.paymentStatus === 'paid' ? 'text-green-600' : 'text-fresia-gold'}`}>{getPaymentText(apt.paymentStatus)}</div>
+                        </div>
+                        <div className="flex gap-1">
+                          <button onClick={() => updatePaymentStatus(apt._id, 'none', 0)} className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-[10px]" title="Pendiente">⏳</button>
+                          <button onClick={() => updatePaymentStatus(apt._id, 'partial', 250)} className="w-8 h-8 rounded-lg bg-fresia-gold/10 flex items-center justify-center text-[10px]" title="Anticipo">💵</button>
+                          <button onClick={() => updatePaymentStatus(apt._id, 'paid', apt.amount)} className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center text-[10px]" title="Total">💰</button>
+                        </div>
                       </div>
                       <div className="flex gap-2">
-                        <button onClick={() => updateAppointmentStatus(apt._id, 'completed')} className="w-8 h-8 rounded-lg bg-fresia-rose-light text-fresia-rose text-xs">✓</button>
+                        {apt.status === 'confirmed' && <button onClick={() => updateAppointmentStatus(apt._id, 'completed')} className="w-8 h-8 rounded-lg bg-green-100 text-green-700 text-xs">✓</button>}
                         <button onClick={() => handleRejectAppointment(apt._id)} className="w-8 h-8 rounded-lg bg-red-50 text-red-500 text-xs">✕</button>
                       </div>
                     </div>
@@ -612,16 +660,48 @@ export default function AdminDashboard({ admin, onLogout }) {
                     </div>
                     <div className="flex gap-2">
                       <button
-                        onClick={() => sendWhatsAppMessage(c.phone, "¡Hola!")}
+                        onClick={() => {
+                          const msg = prompt("Mensaje personalizado:");
+                          if (msg) sendWhatsAppMessage(c.phone, msg);
+                        }}
                         className="w-10 h-10 bg-green-50 text-green-600 rounded-xl flex items-center justify-center hover:bg-green-600 hover:text-white transition-all shadow-sm"
+                        title="WhatsApp"
                       >
                         📱
                       </button>
                       <button
                         onClick={() => { const link = generateLoginLink(c.phone); copyLink(link); }}
                         className="w-10 h-10 bg-fresia-gold/10 text-fresia-gold rounded-xl flex items-center justify-center hover:bg-fresia-gold hover:text-white transition-all shadow-sm text-xs"
+                        title="Copiar Link Acceso"
                       >
                         🔗
+                      </button>
+                      <button
+                        onClick={() => {
+                          const link = generateLoginLink(c.phone);
+                          sendWhatsAppMessage(c.phone, `Hola ${c.name}, este es tu link de acceso al portal: ${link}`);
+                        }}
+                        className="w-10 h-10 bg-fresia-dark text-fresia-gold rounded-xl flex items-center justify-center hover:bg-fresia-gold hover:text-fresia-dark transition-all shadow-sm text-xs"
+                        title="Notificar Link"
+                      >
+                        📢
+                      </button>
+                      <button
+                        onClick={() => {
+                          const newPhone = prompt("Nuevo teléfono:", c.phone);
+                          if (newPhone) handleEditPhone(c.phone, newPhone);
+                        }}
+                        className="w-8 h-8 bg-gray-50 text-fresia-dark/30 rounded-lg flex items-center justify-center text-[10px] self-center"
+                        title="Editar"
+                      >
+                        ✎
+                      </button>
+                      <button
+                        onClick={() => handleDeleteCustomer(c.phone, c.name)}
+                        className="w-8 h-8 bg-red-50 text-red-300 rounded-lg flex items-center justify-center text-[10px] self-center hover:bg-red-500 hover:text-white"
+                        title="Eliminar"
+                      >
+                        🗑
                       </button>
                     </div>
                   </div>
@@ -641,26 +721,53 @@ export default function AdminDashboard({ admin, onLogout }) {
               <span className="text-fresia-gold">✦</span> Agendar Nueva Cita
             </h2>
             <div className="grid grid-cols-1 gap-6 relative">
-              <input
-                type="tel"
-                value={newAppointment.phone}
-                onChange={(e) => {
-                  setNewAppointment({ ...newAppointment, phone: e.target.value })
-                  searchCustomers(e.target.value, 'phone')
-                }}
-                className="input-premium bg-white h-14"
-                placeholder="Teléfono (WhatsApp)"
-              />
-              <input
-                type="text"
-                value={newAppointment.name}
-                onChange={(e) => {
-                  setNewAppointment({ ...newAppointment, name: e.target.value })
-                  searchCustomers(e.target.value, 'name')
-                }}
-                className="input-premium bg-white h-14"
-                placeholder="Nombre"
-              />
+              <div className="relative">
+                <input
+                  type="tel"
+                  value={newAppointment.phone}
+                  onChange={(e) => {
+                    setNewAppointment({ ...newAppointment, phone: e.target.value })
+                    searchCustomers(e.target.value, 'phone')
+                  }}
+                  onFocus={() => { if (newAppointment.phone) searchCustomers(newAppointment.phone, 'phone') }}
+                  className="input-premium bg-white h-14"
+                  placeholder="Teléfono (WhatsApp)"
+                />
+                {showSuggestions && customerSuggestions.length > 0 && (
+                  <div className="absolute z-[110] w-full mt-1 bg-white border border-fresia-gold/10 rounded-2xl shadow-2xl max-h-48 overflow-y-auto p-2">
+                    {customerSuggestions.map((c) => (
+                      <button key={c._id} onClick={() => selectCustomer(c)} className="w-full text-left p-3 hover:bg-fresia-rose-light rounded-xl transition-colors">
+                        <div className="text-sm font-bold text-fresia-dark">{c.name}</div>
+                        <div className="text-[10px] text-fresia-dark/40">{c.phone}</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="relative">
+                <input
+                  type="text"
+                  value={newAppointment.name}
+                  onChange={(e) => {
+                    setNewAppointment({ ...newAppointment, name: e.target.value })
+                    searchCustomers(e.target.value, 'name')
+                  }}
+                  onFocus={() => { if (newAppointment.name) searchCustomers(newAppointment.name, 'name') }}
+                  className="input-premium bg-white h-14"
+                  placeholder="Nombre"
+                />
+                {showSuggestions && customerSuggestions.length > 0 && (
+                  <div className="absolute z-[110] w-full mt-1 bg-white border border-fresia-gold/10 rounded-2xl shadow-2xl max-h-48 overflow-y-auto p-2">
+                    {customerSuggestions.map((c) => (
+                      <button key={c._id} onClick={() => selectCustomer(c)} className="w-full text-left p-3 hover:bg-fresia-rose-light rounded-xl transition-colors">
+                        <div className="text-sm font-bold text-fresia-dark">{c.name}</div>
+                        <div className="text-[10px] text-fresia-dark/40">{c.phone}</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               <select
                 value={newAppointment.service}
                 onChange={(e) => setNewAppointment({
