@@ -28,7 +28,6 @@ export default function CustomerDashboard({ customer, onLogout }) {
 
   const handleCancel = async (appointmentId) => {
     if (!confirm('¿Estás seguro de que quieres cancelar esta cita?')) return
-
     setCancellingId(appointmentId)
     try {
       await appointmentApi.cancel(appointmentId)
@@ -48,7 +47,7 @@ export default function CustomerDashboard({ customer, onLogout }) {
     try {
       const updatedCustomer = await customerApi.updatePIN(customer.phone, newPin)
       localStorage.setItem('customer', JSON.stringify(updatedCustomer))
-      setPinMessage('¡PIN actualizado exitosamente! ✨')
+      setPinMessage('✨ PIN actualizado exitosamente')
       setNewPin('')
       setChangingPin(false)
     } catch (err) {
@@ -58,22 +57,12 @@ export default function CustomerDashboard({ customer, onLogout }) {
 
   const getStatusBadge = (status) => {
     const styles = {
-      waitlist: 'bg-yellow-100 text-yellow-800',
-      confirmed: 'bg-green-100 text-green-800',
-      completed: 'bg-pink-100 text-pink-800',
-      cancelled: 'bg-red-100 text-red-800'
+      waitlist: 'bg-fresia-gold/10 text-fresia-gold',
+      confirmed: 'bg-green-50 text-green-700',
+      completed: 'bg-fresia-rose/10 text-fresia-rose',
+      cancelled: 'bg-red-50 text-red-600'
     }
     return styles[status] || 'bg-gray-100 text-gray-800'
-  }
-
-  const getPaymentBadge = (paymentStatus) => {
-    const styles = {
-      none: 'bg-gray-100 text-gray-600',
-      partial: 'bg-amber-100 text-amber-800',
-      paid: 'bg-green-100 text-green-800',
-      pending_payment: 'bg-orange-100 text-orange-800'
-    }
-    return styles[paymentStatus] || 'bg-gray-100 text-gray-600'
   }
 
   const getStatusText = (status) => {
@@ -86,20 +75,10 @@ export default function CustomerDashboard({ customer, onLogout }) {
     return texts[status] || status
   }
 
-  const getPaymentText = (paymentStatus) => {
-    const texts = {
-      none: 'Lista de espera',
-      partial: 'Depósito pagado',
-      paid: 'Pagado',
-      pending_payment: 'Pagar ahora'
-    }
-    return texts[paymentStatus] || paymentStatus
-  }
-
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('es-ES', {
-      weekday: 'short',
-      month: 'short',
+      weekday: 'long',
+      month: 'long',
       day: 'numeric',
       hour: 'numeric',
       minute: '2-digit',
@@ -116,208 +95,174 @@ export default function CustomerDashboard({ customer, onLogout }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-fuchsia-50 pb-8">
-      {/* Beautiful Header - Mobile Optimized */}
-      <header className="bg-gradient-to-r from-pink-400 via-rose-400 to-fuchsia-400 text-white shadow-xl">
-        <div className="max-w-4xl mx-auto px-3 sm:px-4 py-3 sm:py-5">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <span className="text-2xl sm:text-3xl">💅✨</span>
-              <div className="min-w-0">
-                <h1 className="text-base sm:text-xl font-bold truncate">Fresia Aesthetic</h1>
-                <p className="text-pink-100 text-xs sm:text-sm truncate">Bienvenida, {customer.name}</p>
-              </div>
-            </div>
-            <button
-              onClick={onLogout}
-              className="bg-white/20 hover:bg-white/30 text-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl transition-all text-xs sm:text-base whitespace-nowrap"
-            >
-              <span className="sm:hidden">✕</span>
-              <span className="hidden sm:inline">Cerrar sesión</span>
-            </button>
-          </div>
+    <div className="min-h-screen bg-fresia-cream pb-20 selection:bg-fresia-rose/30">
+      {/* Premium Navigation Dashboard */}
+      <nav className="glass-morphism px-6 py-4 flex justify-between items-center sticky top-0 z-50">
+        <div className="flex items-center gap-2">
+          <span className="text-xl">🌸</span>
+          <span className="font-serif text-lg font-bold tracking-tight text-fresia-dark uppercase">FRESIA</span>
         </div>
-      </header>
+        <div className="flex items-center gap-4">
+          <div className="hidden sm:block text-right mr-2">
+            <p className="text-[10px] uppercase tracking-widest font-bold text-fresia-dark/40">Bienvenida</p>
+            <p className="text-sm font-serif text-fresia-dark">{customer.name}</p>
+          </div>
+          <button
+            onClick={onLogout}
+            className="w-10 h-10 rounded-full border border-fresia-dark/10 flex items-center justify-center hover:bg-fresia-dark hover:text-white transition-all"
+            title="Cerrar Sesión"
+          >
+            ✕
+          </button>
+        </div>
+      </nav>
 
-      {/* Decorative flowers */}
-      <div className="relative overflow-hidden h-3 sm:h-4">
-        <div className="absolute top-0 left-4 sm:left-10 text-pink-200 text-2xl sm:text-4xl opacity-50">🌸</div>
-        <div className="absolute top-0 right-8 sm:right-20 text-rose-200 text-xl sm:text-3xl opacity-50">🌺</div>
-      </div>
+      <main className="max-w-4xl mx-auto px-6 pt-12 animate-fade-in">
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Left Column: Profile & PIN */}
+          <aside className="md:w-1/3 space-y-6">
+            <div className="glass-card rounded-[32px] p-8">
+              <div className="w-20 h-20 rounded-full bg-fresia-rose-light flex items-center justify-center text-3xl mb-6 mx-auto border-4 border-white shadow-inner">
+                {customer.name.charAt(0)}
+              </div>
+              <h2 className="text-center font-serif text-2xl text-fresia-dark mb-1">{customer.name}</h2>
+              <p className="text-center text-[10px] uppercase tracking-[0.2em] text-fresia-dark/40 mb-8 font-bold">{customer.phone}</p>
 
-      {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
-        {/* PIN Section - Beautiful Card - Mobile Optimized */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 mb-4 sm:mb-6 border border-pink-100">
-          <h2 className="text-base sm:text-lg font-bold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent mb-3 sm:mb-4 flex items-center gap-2">
-            🔐 Mi PIN de Acceso
-          </h2>
+              <div className="pt-6 border-t border-fresia-gold/10">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="text-[10px] uppercase tracking-widest font-bold text-fresia-dark/40">PIN de Acceso</span>
+                  <span className="font-mono text-fresia-rose font-bold tracking-widest">{customer.pin}</span>
+                </div>
 
-          <div className="flex flex-col gap-3 sm:gap-4">
-            <div className="bg-gradient-to-r from-pink-100 to-rose-100 rounded-xl sm:rounded-2xl p-3 sm:p-4">
-              <p className="text-gray-600 text-xs sm:text-sm mb-1">Tu PIN actual:</p>
-              <div className="text-2xl sm:text-3xl font-bold text-pink-600 tracking-widest font-mono">
-                {customer.pin || '••••'}
+                {changingPin ? (
+                  <div className="space-y-3 animate-fade-in">
+                    <input
+                      type="password"
+                      value={newPin}
+                      onChange={(e) => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                      placeholder="Nuevo PIN"
+                      maxLength={4}
+                      inputMode="numeric"
+                      className="input-premium py-2 text-center text-xl tracking-[1em]"
+                    />
+                    <div className="flex gap-2">
+                      <button onClick={handleChangePIN} className="flex-1 bg-fresia-dark text-white py-2 rounded-xl text-xs font-bold uppercase tracking-widest">OK</button>
+                      <button onClick={() => setChangingPin(false)} className="px-4 py-2 border border-fresia-dark/10 rounded-xl text-xs">✕</button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setChangingPin(true)}
+                    className="w-full py-3 rounded-xl border border-fresia-gold/20 text-[10px] uppercase tracking-widest font-bold hover:bg-fresia-rose-light hover:text-fresia-rose transition-all"
+                  >
+                    Actualizar PIN
+                  </button>
+                )}
+                {pinMessage && <p className="mt-3 text-[10px] text-center italic text-fresia-rose">{pinMessage}</p>}
               </div>
             </div>
 
-            {changingPin ? (
-              <div className="flex flex-col gap-2">
-                <input
-                  type="password"
-                  value={newPin}
-                  onChange={(e) => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                  placeholder="Nuevo PIN"
-                  maxLength={4}
-                  inputMode="numeric"
-                  className="px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 border-pink-200 focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all text-center font-mono text-lg sm:text-xl tracking-widest"
-                />
-                <div className="flex gap-2">
+            <div className="glass-morphism rounded-[32px] p-6 text-center">
+              <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-fresia-dark/40 mb-4">¿Preguntas?</p>
+              <a href="https://wa.me/5216181234567" className="text-sm font-serif text-fresia-dark hover:text-fresia-rose transition-colors underline decoration-fresia-gold">Hablar con Recepción</a>
+            </div>
+          </aside>
+
+          {/* Right Column: Appointments */}
+          <section className="md:w-2/3">
+            <div className="flex justify-between items-end mb-8">
+              <div>
+                <h1 className="text-4xl font-serif text-fresia-dark mb-2">Mis Citas</h1>
+                <div className="flex gap-6 border-b border-fresia-gold/10 pb-0 shadow-[0_1px_rgba(230,190,138,0.1)]">
                   <button
-                    onClick={handleChangePIN}
-                    className="flex-1 bg-gradient-to-r from-pink-400 to-rose-400 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-semibold shadow-lg shadow-pink-200 hover:shadow-xl transition-all text-sm sm:text-base"
+                    onClick={() => setActiveTab('active')}
+                    className={`pb-3 text-[10px] uppercase tracking-[0.3em] font-bold transition-all relative ${activeTab === 'active' ? 'text-fresia-dark' : 'text-fresia-dark/30 hover:text-fresia-dark/50'}`}
                   >
-                    ✓ Guardar
+                    Próximas
+                    {activeTab === 'active' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-fresia-rose animate-fade-in"></div>}
                   </button>
                   <button
-                    onClick={() => { setChangingPin(false); setNewPin('') }}
-                    className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all text-sm sm:text-base"
+                    onClick={() => setActiveTab('past')}
+                    className={`pb-3 text-[10px] uppercase tracking-[0.3em] font-bold transition-all relative ${activeTab === 'past' ? 'text-fresia-dark' : 'text-fresia-dark/30 hover:text-fresia-dark/50'}`}
                   >
-                    ✕
+                    Historial
+                    {activeTab === 'past' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-fresia-rose animate-fade-in"></div>}
                   </button>
                 </div>
+              </div>
+              <Link to="/book" className="btn-premium py-3 px-6 text-xs uppercase tracking-widest hidden sm:block">
+                Nueva Reserva
+              </Link>
+            </div>
+
+            {loading ? (
+              <div className="py-20 text-center">
+                <div className="w-10 h-10 border-2 border-fresia-gold border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              </div>
+            ) : getFilteredAppointments().length === 0 ? (
+              <div className="glass-card rounded-[40px] p-16 text-center border-dashed border-fresia-gold/30">
+                <span className="text-4xl block mb-6 opacity-30">💅</span>
+                <p className="text-fresia-dark/40 font-light italic mb-8">No tienes citas programadas en esta sección.</p>
+                <Link to="/book" className="text-fresia-rose font-bold uppercase tracking-widest text-xs hover:tracking-[0.2em] transition-all">Explorar Servicios →</Link>
               </div>
             ) : (
-              <button
-                onClick={() => setChangingPin(true)}
-                className="bg-gradient-to-r from-pink-400 to-rose-400 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold shadow-lg shadow-pink-200 hover:shadow-xl transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
-              >
-                🔄 Cambiar PIN
-              </button>
-            )}
-          </div>
+              <div className="space-y-6">
+                {getFilteredAppointments().map((apt) => (
+                  <div key={apt._id} className="group glass-card rounded-[32px] p-8 hover:bg-white transition-all duration-500 overflow-hidden relative">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-fresia-rose-light/20 rounded-bl-full translate-x-12 -translate-y-12 transition-transform group-hover:translate-x-8 group-hover:-translate-y-8 pointer-events-none"></div>
 
-          {pinMessage && (
-            <p className="mt-2 sm:mt-3 text-green-600 font-medium flex items-center gap-2 text-sm">
-              ✨ {pinMessage}
-            </p>
-          )}
-        </div>
-
-        {/* Appointments Section */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
-          <div className="flex flex-col gap-2 w-full sm:w-auto">
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center gap-2">
-              📅 Mis Citas
-            </h1>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setActiveTab('active')}
-                className={`text-sm px-4 py-1.5 rounded-full font-medium transition-all ${activeTab === 'active'
-                  ? 'bg-pink-500 text-white shadow-md'
-                  : 'bg-white text-gray-500 hover:bg-pink-50'
-                  }`}
-              >
-                Próximas
-              </button>
-              <button
-                onClick={() => setActiveTab('past')}
-                className={`text-sm px-4 py-1.5 rounded-full font-medium transition-all ${activeTab === 'past'
-                  ? 'bg-pink-500 text-white shadow-md'
-                  : 'bg-white text-gray-500 hover:bg-pink-50'
-                  }`}
-              >
-                Pasadas
-              </button>
-            </div>
-          </div>
-          <Link
-            to="/book"
-            className="bg-gradient-to-r from-pink-400 to-rose-400 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto"
-          >
-            ➕ Nueva Cita
-          </Link>
-        </div>
-
-        {loading ? (
-          <div className="text-center py-8 sm:py-12">
-            <div className="inline-block animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-pink-500"></div>
-            <p className="mt-3 sm:mt-4 text-pink-500 text-sm sm:text-base">Cargando citas...</p>
-          </div>
-        ) : getFilteredAppointments().length === 0 ? (
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-xl p-8 sm:p-12 text-center border border-pink-100">
-            <span className="text-5xl sm:text-7xl block mb-3 sm:mb-4">💅✨</span>
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-700 mb-2">
-              {activeTab === 'active' ? 'Sin citas próximas' : 'Sin citas pasadas'}
-            </h2>
-            <p className="text-gray-500 mb-4 sm:mb-6 text-sm sm:text-base">
-              {activeTab === 'active' ? '¡Agenda tu próxima visita hoy mismo!' : ''}
-            </p>
-            {activeTab === 'active' && (
-              <Link
-                to="/book"
-                className="inline-block bg-gradient-to-r from-pink-400 to-rose-400 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all text-sm sm:text-base"
-              >
-                ➕ Agendar Cita
-              </Link>
-            )}
-          </div>
-        ) : (
-          <div className="space-y-3 sm:space-y-4">
-            {getFilteredAppointments().map((apt) => (
-              <div key={apt._id} className="bg-white/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-lg p-4 sm:p-5 border border-pink-100 hover:shadow-xl transition-all">
-                <div className="flex flex-col gap-3 sm:gap-4">
-                  <div className="flex-1">
-                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
-                      <h3 className="text-base sm:text-lg font-semibold text-gray-800">{apt.serviceType}</h3>
-                      <span className={`px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-medium ${getStatusBadge(apt.status)}`}>
-                        {getStatusText(apt.status)}
-                      </span>
-                      <span className={`px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-medium ${getPaymentBadge(apt.paymentStatus)}`}>
-                        {getPaymentText(apt.paymentStatus)}
-                      </span>
+                    <div className="flex justify-between items-start relative z-10 mb-6">
+                      <div>
+                        <span className={`inline-block px-3 py-1 rounded-full text-[8px] uppercase tracking-[0.2em] font-bold mb-3 ${getStatusBadge(apt.status)}`}>
+                          {getStatusText(apt.status)}
+                        </span>
+                        <h3 className="text-2xl font-serif text-fresia-dark mb-1">{apt.serviceType}</h3>
+                        <div className="flex items-center gap-2 text-fresia-dark/50 text-xs font-light tracking-wide first-letter:uppercase">
+                          <span className="text-fresia-gold">✦</span> {formatDate(apt.appointmentDate)}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[10px] uppercase tracking-widest font-bold text-fresia-dark/30 mb-1">Monto</p>
+                        <p className="text-xl font-serif text-fresia-dark">${apt.amount}</p>
+                      </div>
                     </div>
-                    <p className="text-gray-600 flex items-center gap-2 text-sm sm:text-base">
-                      📅 {formatDate(apt.appointmentDate)}
-                    </p>
-                    {apt.notes && (
-                      <p className="text-gray-500 text-xs sm:text-sm mt-1">📝 {apt.notes}</p>
-                    )}
-                    {apt.paymentStatus === 'paid' && apt.status === 'completed' && (
-                      <p className="text-green-600 text-xs sm:text-sm mt-2 font-medium">✓ Pagado - ¡Gracias por tu visita!</p>
-                    )}
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {(apt.paymentStatus === 'partial' || apt.paymentStatus === 'pending_payment' || apt.paymentStatus === 'none') && apt.status !== 'cancelled' && apt.status !== 'completed' && apt.status !== 'rejected' && (
-                      <Link
-                        to={`/appointment/${apt._id}`}
-                        className="bg-gradient-to-r from-green-400 to-emerald-500 text-white px-3 sm:px-5 py-2 sm:py-2 rounded-lg sm:rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all text-sm"
-                      >
-                        💳 Pagar
-                      </Link>
-                    )}
-                    {apt.status !== 'cancelled' && apt.status !== 'completed' && (
-                      <button
-                        onClick={() => handleCancel(apt._id)}
-                        disabled={cancellingId === apt._id}
-                        className="px-3 sm:px-5 py-2 sm:py-2 rounded-lg sm:rounded-xl bg-red-50 text-red-500 hover:bg-red-100 transition-all font-medium disabled:opacity-50 text-sm"
-                      >
-                        {cancellingId === apt._id ? '⏳' : '✕'} Cancelar
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </main>
 
-      {/* Decorative bottom flowers */}
-      <div className="relative h-10 sm:h-16 mt-4 sm:mt-8">
-        <div className="absolute bottom-0 left-4 sm:left-10 text-pink-200 text-3xl sm:text-5xl opacity-50">🌸</div>
-        <div className="absolute bottom-0 right-4 sm:right-10 text-rose-200 text-4xl sm:text-6xl opacity-50">🌺</div>
-      </div>
+                    <div className="flex items-center justify-between border-t border-fresia-gold/10 pt-6">
+                      <div className="flex gap-4">
+                        {(apt.paymentStatus === 'partial' || apt.paymentStatus === 'pending_payment' || apt.paymentStatus === 'none') &&
+                          apt.status !== 'cancelled' && apt.status !== 'completed' && apt.status !== 'rejected' && (
+                            <Link
+                              to={`/appointment/${apt._id}`}
+                              className="bg-fresia-gold/10 text-fresia-dark font-bold text-[10px] uppercase tracking-widest py-2 px-6 rounded-xl hover:bg-fresia-gold hover:text-white transition-all"
+                            >
+                              Pagar
+                            </Link>
+                          )}
+                        {apt.status !== 'cancelled' && apt.status !== 'completed' && (
+                          <button
+                            onClick={() => handleCancel(apt._id)}
+                            disabled={cancellingId === apt._id}
+                            className="text-fresia-dark/30 hover:text-red-500 font-bold text-[10px] uppercase tracking-widest py-2 transition-colors"
+                          >
+                            {cancellingId === apt._id ? 'Cancelando...' : 'Cancelar Cita'}
+                          </button>
+                        )}
+                      </div>
+                      {apt.paymentStatus === 'paid' && (
+                        <span className="text-[8px] uppercase tracking-[0.2em] font-black text-fresia-rose bg-fresia-rose/5 px-3 py-1 rounded-lg">Pago Completo ✓</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <Link to="/book" className="btn-premium w-full mt-10 text-center py-5 sm:hidden">
+              Nueva Reserva
+            </Link>
+          </section>
+        </div>
+      </main>
     </div>
   )
 }

@@ -23,10 +23,6 @@ export default function BookAppointment({ customer }) {
   const [appointments, setAppointments] = useState([])
   const navigate = useNavigate()
 
-  const serviceTypes = SERVICE_TYPES
-
-  const timeSlots = TIME_SLOTS
-
   useEffect(() => {
     if (formData.date) {
       fetchAppointmentsForDate(formData.date)
@@ -44,27 +40,19 @@ export default function BookAppointment({ customer }) {
 
   const isSlotAvailable = (time) => {
     if (!formData.date) return true
-
-    // Create a UTC timestamp for the slot to compare with stored UTC appointment dates
     const slotDate = new Date(`${formData.date}T${time}:00`)
     const slotTime = slotDate.getTime()
     const DURATION_MS = APPOINTMENT_DURATION_MINS * 60 * 1000
 
     return !appointments.some(apt => {
       const aptTime = new Date(apt.appointmentDate).getTime()
-      // A slot is taken if an existing appointment starts within +/- 90 mins of the slot start
       const isOverlap = Math.abs(slotTime - aptTime) < DURATION_MS
       return isOverlap && apt.status !== 'cancelled' && apt.status !== 'rejected'
     })
   }
 
-  const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-  }
-
   const handleServiceChange = (serviceId) => {
-    const service = serviceTypes.find(s => s.id === serviceId)
+    const service = SERVICE_TYPES.find(s => s.id === serviceId)
     setFormData(prev => ({
       ...prev,
       serviceType: serviceId,
@@ -74,7 +62,6 @@ export default function BookAppointment({ customer }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-
     if (!isSlotAvailable(formData.time)) {
       setError('Este horario ya no está disponible. Por favor elige otro.')
       return
@@ -83,10 +70,8 @@ export default function BookAppointment({ customer }) {
     setError('')
     setLoading(true)
 
-    const selectedService = serviceTypes.find(s => s.id === formData.serviceType)
+    const selectedService = SERVICE_TYPES.find(s => s.id === formData.serviceType)
     const amount = selectedService ? selectedService.price : 0
-
-    // Create date in local time then convert to ISO
     const localDate = new Date(`${formData.date}T${formData.time}:00`)
 
     const appointmentData = {
@@ -103,14 +88,12 @@ export default function BookAppointment({ customer }) {
     }
 
     try {
-      // If it's a waitlist appointment, create immediately
       if (formData.paymentType === 'waitlist') {
         await appointmentApi.create(appointmentData)
         navigate('/dashboard')
         return
       }
 
-      // If it's a paid appointment, redirect to Stripe WITHOUT creating DB record yet
       const stripeAmount = formData.paymentType === 'min_deposit'
         ? Math.round(amount * DEPOSIT_PERCENTAGE)
         : amount;
@@ -124,7 +107,7 @@ export default function BookAppointment({ customer }) {
           serviceType: appointmentData.serviceType,
           appointmentData: {
             ...appointmentData,
-            amount: String(appointmentData.amount), // Metadata must be strings
+            amount: String(appointmentData.amount),
             paidAmount: '0',
             paymentStatus: 'pending_payment',
             status: 'confirmed',
@@ -133,7 +116,6 @@ export default function BookAppointment({ customer }) {
       });
 
       const paymentData = await paymentResponse.json();
-
       if (paymentData.url) {
         window.location.href = paymentData.url;
       } else {
@@ -146,188 +128,149 @@ export default function BookAppointment({ customer }) {
     }
   }
 
-
-  const availableSlots = timeSlots.filter(isSlotAvailable)
+  const availableSlots = TIME_SLOTS.filter(isSlotAvailable)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-fuchsia-50 pb-8">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm shadow-sm sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
-          <Link to="/dashboard" className="text-gray-600 hover:text-gray-800 flex items-center gap-2 text-sm sm:text-base">
-            ← Volver al Dashboard
-          </Link>
-        </div>
-      </header>
+    <div className="min-h-screen bg-fresia-cream pb-20 selection:bg-fresia-rose/30">
+      {/* Navigation */}
+      <nav className="p-6">
+        <Link
+          to="/dashboard"
+          className="inline-flex items-center gap-2 text-fresia-dark/50 hover:text-fresia-rose transition-colors uppercase tracking-widest text-xs font-bold"
+        >
+          <span className="text-lg">←</span> Volver al Dashboard
+        </Link>
+      </nav>
 
-      {/* Main Content */}
-      <main className="max-w-2xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-8 px-1">Reservar Cita</h1>
+      <main className="max-w-4xl mx-auto px-6 animate-fade-in">
+        <header className="text-center mb-12">
+          <span className="font-serif italic text-fresia-rose text-2xl mb-2 block">Reserva tu Experiencia</span>
+          <h1 className="text-4xl md:text-5xl font-serif text-fresia-dark">Nueva Cita</h1>
+          <div className="w-16 h-1 bg-fresia-gold mx-auto mt-6"></div>
+        </header>
 
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 border border-pink-100">
-          <form onSubmit={handleSubmit}>
-            {/* Service Type */}
-            <div className="mb-5 sm:mb-6">
-              <label className="block text-gray-700 font-semibold mb-2 sm:mb-3 text-sm sm:text-base">
-                Selecciona Servicio
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-                {serviceTypes.map((service) => (
-                  <label
-                    key={service.id}
-                    className={`p-2.5 sm:p-3 border-2 rounded-lg sm:rounded-xl cursor-pointer transition-all ${formData.serviceType === service.id
-                      ? 'border-pink-400 bg-pink-50'
-                      : 'border-gray-200 hover:border-pink-200'
-                      }`}
-                  >
-                    <input
-                      type="radio"
-                      name="serviceType"
-                      value={service.id}
-                      checked={formData.serviceType === service.id}
-                      onChange={() => handleServiceChange(service.id)}
-                      className="sr-only"
-                    />
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium text-sm sm:text-base">{service.name}</span>
-                      <span className="text-pink-600 font-semibold text-sm sm:text-base">${service.price}</span>
-                    </div>
-                  </label>
-                ))}
-              </div>
+        <form onSubmit={handleSubmit} className="space-y-12">
+          {/* Service Selection */}
+          <section>
+            <h2 className="text-sm uppercase tracking-[0.2em] text-fresia-dark/40 font-bold mb-6 border-b border-fresia-gold/20 pb-2">1. Selecciona el Servicio</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {SERVICE_TYPES.map((service) => (
+                <button
+                  key={service.id}
+                  type="button"
+                  onClick={() => handleServiceChange(service.id)}
+                  className={`p-6 rounded-2xl border text-left transition-all duration-300 ${formData.serviceType === service.id
+                      ? 'bg-fresia-dark text-white border-fresia-dark shadow-xl scale-[1.02]'
+                      : 'bg-white border-fresia-gold/20 text-fresia-dark hover:border-fresia-rose'
+                    }`}
+                >
+                  <div className={`text-2xl mb-4 ${formData.serviceType === service.id ? 'opacity-100' : 'opacity-50'}`}>
+                    {service.id === 'manicure' ? '💅' :
+                      service.id === 'pedicure' ? '🦶' :
+                        service.id === 'nails' ? '✨' :
+                          service.id === 'gel' ? '💖' :
+                            service.id === 'manicure_pedicure' ? '🌟' :
+                              service.id === 'fill_in' ? '✨' : '🌸'}
+                  </div>
+                  <h3 className="font-serif text-lg mb-1">{service.name}</h3>
+                  <p className={`text-xs font-bold ${formData.serviceType === service.id ? 'text-fresia-gold' : 'text-fresia-rose'}`}>
+                    ${service.price} MXN
+                  </p>
+                </button>
+              ))}
             </div>
+          </section>
 
-            {/* Date */}
-            <div className="mb-4">
-              <label className="block text-gray-700 font-semibold mb-2 text-sm sm:text-base">
-                Selecciona Fecha
-              </label>
+          {/* Date & Time Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <section>
+              <h2 className="text-sm uppercase tracking-[0.2em] text-fresia-dark/40 font-bold mb-6 border-b border-fresia-gold/20 pb-2">2. Elige la Fecha</h2>
               <input
                 type="date"
-                name="date"
                 value={formData.date}
-                onChange={handleChange}
+                onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
                 min={getTomorrowDate()}
-                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 border-pink-200 focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all text-base"
+                className="input-premium bg-white shadow-inner"
                 required
               />
-            </div>
+            </section>
 
-            {/* Time */}
-            <div className="mb-4">
-              <label className="block text-gray-700 font-semibold mb-2 text-sm sm:text-base">
-                Selecciona Hora
-              </label>
-              <select
-                name="time"
-                value={formData.time}
-                onChange={handleChange}
-                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 border-pink-200 focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all text-base bg-white"
-                required
-              >
-                <option value="" disabled>Selecciona una hora</option>
+            <section>
+              <h2 className="text-sm uppercase tracking-[0.2em] text-fresia-dark/40 font-bold mb-6 border-b border-fresia-gold/20 pb-2">3. Elige la Hora</h2>
+              <div className="grid grid-cols-3 gap-2 max-h-[220px] overflow-y-auto p-2 scrollbar-hide">
                 {availableSlots.map((time) => (
-                  <option key={time} value={time}>
+                  <button
+                    key={time}
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, time }))}
+                    className={`py-3 rounded-lg border text-sm font-medium transition-all ${formData.time === time
+                        ? 'bg-fresia-rose text-white border-fresia-rose shadow-md'
+                        : 'bg-white border-fresia-gold/10 text-fresia-dark hover:border-fresia-gold'
+                      }`}
+                  >
                     {time}
-                  </option>
+                  </button>
                 ))}
-              </select>
-              {availableSlots.length === 0 && formData.date && (
-                <p className="text-red-500 text-xs mt-1">No hay horarios disponibles para esta fecha.</p>
-              )}
-            </div>
-
-            {/* Payment Option */}
-            <div className="mb-4 sm:mb-5">
-              <label className="block text-gray-700 font-semibold mb-2 sm:mb-3 text-sm sm:text-base">
-                Opción de Pago
-              </label>
-              <div className="space-y-2 sm:space-y-3">
-                <label className={`flex p-3 sm:p-4 border-2 rounded-lg sm:rounded-xl cursor-pointer transition-all ${formData.paymentType === 'waitlist'
-                  ? 'border-pink-400 bg-pink-50'
-                  : 'border-gray-200 hover:border-pink-200'
-                  }`}>
-                  <input
-                    type="radio"
-                    name="paymentType"
-                    value="waitlist"
-                    checked={formData.paymentType === 'waitlist'}
-                    onChange={handleChange}
-                    className="mt-0.5 sm:mt-1"
-                  />
-                  <div className="ml-2 sm:ml-3">
-                    <div className="font-medium text-sm sm:text-base">Unirse a Lista de Espera</div>
-                    <div className="text-xs sm:text-sm text-gray-500">Paga después de tu cita</div>
-                  </div>
-                </label>
-
-                <label className={`flex p-3 sm:p-4 border-2 rounded-lg sm:rounded-xl cursor-pointer transition-all ${formData.paymentType === 'min_deposit'
-                  ? 'border-pink-400 bg-pink-50'
-                  : 'border-gray-200 hover:border-pink-200'
-                  }`}>
-                  <input
-                    type="radio"
-                    name="paymentType"
-                    value="min_deposit"
-                    checked={formData.paymentType === 'min_deposit'}
-                    onChange={handleChange}
-                    className="mt-0.5 sm:mt-1"
-                  />
-                  <div className="ml-2 sm:ml-3">
-                    <div className="font-medium text-sm sm:text-base">Pagar Depósito Mínimo (20%)</div>
-                    <div className="text-xs sm:text-sm text-gray-500">Asegura tu lugar con un depósito del 20%</div>
-                  </div>
-                </label>
-
-                <label className={`flex p-3 sm:p-4 border-2 rounded-lg sm:rounded-xl cursor-pointer transition-all ${formData.paymentType === 'full'
-                  ? 'border-pink-400 bg-pink-50'
-                  : 'border-gray-200 hover:border-pink-200'
-                  }`}>
-                  <input
-                    type="radio"
-                    name="paymentType"
-                    value="full"
-                    checked={formData.paymentType === 'full'}
-                    onChange={handleChange}
-                    className="mt-0.5 sm:mt-1"
-                  />
-                  <div className="ml-2 sm:ml-3">
-                    <div className="font-medium text-sm sm:text-base">Pagar Monto Completo</div>
-                    <div className="text-xs sm:text-sm text-gray-500">Paga el monto completo ahora</div>
-                  </div>
-                </label>
+                {availableSlots.length === 0 && (
+                  <p className="col-span-3 text-center py-8 text-fresia-dark/40 italic text-sm">No hay horarios disponibles</p>
+                )}
               </div>
+            </section>
+          </div>
+
+          {/* Payment Section */}
+          <section>
+            <h2 className="text-sm uppercase tracking-[0.2em] text-fresia-dark/40 font-bold mb-6 border-b border-fresia-gold/20 pb-2">4. Modalidad de Pago</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {[
+                { id: 'waitlist', label: 'Lista de Espera', desc: 'Paga en el salón' },
+                { id: 'min_deposit', label: 'Depósito (20%)', desc: `Asegura tu lugar con $${Math.round(formData.amount * DEPOSIT_PERCENTAGE)}` },
+                { id: 'full', label: 'Monto Total', desc: `Saldar $${formData.amount} ahora` }
+              ].map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setFormData(prev => ({ ...prev, paymentType: opt.id }))}
+                  className={`p-6 rounded-2xl border text-left transition-all ${formData.paymentType === opt.id
+                      ? 'bg-fresia-rose-light border-fresia-rose text-fresia-rose ring-2 ring-fresia-rose/20'
+                      : 'bg-white border-fresia-gold/10 text-fresia-dark hover:border-fresia-gold'
+                    }`}
+                >
+                  <div className="font-serif text-lg mb-1">{opt.label}</div>
+                  <div className="text-[10px] uppercase tracking-widest font-bold opacity-60">{opt.desc}</div>
+                </button>
+              ))}
             </div>
+          </section>
 
-            {/* Notes */}
-            <div className="mb-5 sm:mb-6">
-              <label className="block text-gray-700 font-semibold mb-2 text-sm sm:text-base">
-                Solicitudes Especiales (Opcional)
-              </label>
-              <textarea
-                name="notes"
-                value={formData.notes}
-                onChange={handleChange}
-                placeholder="¿Alguna solicitud especial?"
-                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 border-pink-200 focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all text-base h-20 sm:h-24 resize-none"
-              />
+          {/* Notes */}
+          <section>
+            <h2 className="text-sm uppercase tracking-[0.2em] text-fresia-dark/40 font-bold mb-6 border-b border-fresia-gold/20 pb-2">5. Notas Especiales (Opcional)</h2>
+            <textarea
+              value={formData.notes}
+              onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+              placeholder="Ej: ¿Prefieres algún estilo de diseño?"
+              className="input-premium bg-white h-32 resize-none"
+            />
+          </section>
+
+          {error && (
+            <div className="p-4 bg-red-50 text-red-700 rounded-xl text-sm border border-red-100 italic">
+              ✦ {error}
             </div>
+          )}
 
-            {error && (
-              <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-xl text-sm">
-                {error}
-              </div>
-            )}
-
+          <div className="pt-8 border-t border-fresia-gold/20 flex flex-col items-center">
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-pink-400 via-rose-400 to-fuchsia-400 text-white py-3 sm:py-4 rounded-xl font-bold text-base sm:text-lg shadow-lg shadow-pink-200 hover:shadow-xl hover:scale-[1.02] transition-all disabled:opacity-50 min-h-[48px]"
+              className="btn-premium w-full max-w-md py-5 text-xl tracking-[0.2em] uppercase"
             >
-              {loading ? 'Reservando...' : 'Confirmar Reserva'}
+              {loading ? 'Confirmando...' : 'Confirmar Reserva'}
             </button>
-          </form>
-        </div>
+            <p className="mt-6 text-fresia-dark/30 text-[10px] uppercase tracking-[0.3em] font-medium">Fresia Aesthetic & Wellness</p>
+          </div>
+        </form>
       </main>
     </div>
   )

@@ -33,7 +33,7 @@ function AppContent() {
     // Handle auto-login from URL (admin sending link)
     const refPhone = searchParams.get('ref')
     const redirectTo = searchParams.get('redirectTo')
-    
+
     if (refPhone && !storedCustomer) {
       // Try to auto-login with the reference phone
       customerApi.autoLogin(refPhone)
@@ -49,7 +49,7 @@ function AppContent() {
           navigate(`/login?ref=${refPhone}`, { replace: true })
         })
     }
-    
+
     setLoading(false)
   }, [searchParams, navigate])
 
@@ -75,8 +75,8 @@ function AppContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500"></div>
+      <div className="min-h-screen bg-fresia-dark flex items-center justify-center">
+        <div className="w-12 h-12 border-2 border-fresia-gold border-t-transparent rounded-full animate-spin"></div>
       </div>
     )
   }
@@ -88,7 +88,7 @@ function AppContent() {
       <Route path="/login" element={<CustomerLogin onLogin={handleCustomerLogin} />} />
       <Route path="/admin" element={<AdminLogin onLogin={handleAdminLogin} />} />
       <Route path="/payment-success" element={<PaymentSuccess />} />
-      
+
       {/* Protected customer routes */}
       <Route path="/dashboard" element={
         customer ? <CustomerDashboard customer={customer} onLogout={handleCustomerLogout} /> : <Navigate to="/login" />

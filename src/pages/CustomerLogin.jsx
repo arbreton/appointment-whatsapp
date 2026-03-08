@@ -10,17 +10,14 @@ export default function CustomerLogin({ onLogin }) {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
-  // Pre-fill phone from URL and try auto-login
   useEffect(() => {
     const refPhone = searchParams.get('loginref') || searchParams.get('ref')
     const refPin = searchParams.get('p')
     if (refPhone && refPin) {
       setPhone(refPhone)
-      // Try auto-login with PIN from URL
       handleAutoLogin(refPhone, refPin)
     } else if (refPhone) {
       setPhone(refPhone)
-      // Just pre-fill phone, user must enter PIN
     }
   }, [searchParams])
 
@@ -32,7 +29,6 @@ export default function CustomerLogin({ onLogin }) {
       navigate('/dashboard')
     } catch (err) {
       console.error('Auto-login failed:', err)
-      // Keep phone filled, user will need to enter PIN manually
       setLoading(false)
     }
   }
@@ -54,52 +50,52 @@ export default function CustomerLogin({ onLogin }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-fuchsia-50 flex items-center justify-center px-4 py-6 sm:py-12">
-      {/* Decorative flowers - hidden on small mobile */}
-      <div className="fixed top-10 left-4 text-pink-200 text-5xl sm:text-6xl md:text-7xl opacity-30 sm:opacity-50 pointer-events-none">🌸</div>
-      <div className="fixed top-20 right-4 text-rose-200 text-4xl sm:text-5xl md:text-6xl opacity-30 sm:opacity-50 pointer-events-none">🌺</div>
-      <div className="hidden sm:block fixed bottom-20 left-1/4 text-fuchsia-200 text-5xl opacity-50 pointer-events-none">🌷</div>
-      <div className="fixed bottom-10 right-4 text-pink-200 text-4xl sm:text-5xl md:text-6xl opacity-30 sm:opacity-50 pointer-events-none">💐</div>
+    <div className="min-h-screen bg-fresia-dark flex items-center justify-center p-6 relative overflow-hidden">
+      {/* Background Image with Overlay */}
+      <div className="absolute inset-0 z-0">
+        <img
+          src="/assets/images/hero.png"
+          alt="Background"
+          className="w-full h-full object-cover opacity-30 grayscale"
+        />
+        <div className="absolute inset-0 bg-gradient-to-tr from-fresia-dark via-fresia-dark/80 to-transparent"></div>
+      </div>
 
-      <div className="max-w-md w-full relative">
-        {/* Logo/Header */}
-        <div className="text-center mb-6 sm:mb-8">
-          <div className="inline-block mb-3 sm:mb-4">
-            <span className="text-5xl sm:text-6xl">💅✨</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-pink-500 via-rose-500 to-fuchsia-500 bg-clip-text text-transparent px-2">
-            Fresia Aesthetic
-          </h1>
-          <p className="text-gray-600 mt-2 sm:mt-3 text-base sm:text-lg px-4">Ingresa tu número y PIN para continuar</p>
+      <div className="max-w-md w-full relative z-10 animate-fade-in">
+        {/* Logo */}
+        <div className="text-center mb-12">
+          <Link to="/" className="inline-flex items-center gap-3 mb-6">
+            <span className="text-4xl">🌸</span>
+            <span className="font-serif text-3xl font-bold tracking-tight text-fresia-cream uppercase">FRESIA</span>
+          </Link>
+          <div className="w-12 h-0.5 bg-fresia-gold mx-auto mb-6"></div>
+          <h1 className="text-fresia-cream font-serif text-4xl mb-4">Bienvenido</h1>
+          <p className="text-fresia-cream/50 font-light tracking-wide uppercase text-[10px]">Tu santuario de belleza personal</p>
         </div>
 
         {/* Login Card */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-xl p-5 sm:p-8 border border-pink-100 mx-2 sm:mx-0">
+        <div className="glass-card rounded-[40px] p-10 border-white/10 shadow-2xl">
           {loading ? (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-pink-500 mx-auto mb-4"></div>
-              <p className="text-pink-500 text-sm sm:text-base">Iniciando sesión...</p>
+            <div className="text-center py-12">
+              <div className="w-12 h-12 border-2 border-fresia-gold border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+              <p className="text-fresia-dark/60 font-medium uppercase tracking-[0.2em] text-xs">Verificando Credenciales</p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit}>
-              <div className="mb-4 sm:mb-6">
-                <label className="block text-gray-700 font-semibold mb-2 text-sm sm:text-base">
-                  📱 Número de Teléfono
-                </label>
+            <form onSubmit={handleSubmit} className="space-y-8">
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase tracking-[0.3em] font-bold text-fresia-dark/40 ml-1">Teléfono</label>
                 <input
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="Ej: +1234567890"
-                  className="w-full px-3 sm:px-4 py-3 rounded-xl border-2 border-pink-200 focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all text-base"
+                  placeholder="+5216181234567"
+                  className="input-premium bg-white shadow-sm"
                   required
                 />
               </div>
 
-              <div className="mb-4 sm:mb-6">
-                <label className="block text-gray-700 font-semibold mb-2 text-sm sm:text-base">
-                  🔐 PIN (4 dígitos)
-                </label>
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase tracking-[0.3em] font-bold text-fresia-dark/40 ml-1">PIN Secreto</label>
                 <input
                   type="password"
                   value={pin}
@@ -107,36 +103,38 @@ export default function CustomerLogin({ onLogin }) {
                   placeholder="••••"
                   maxLength={4}
                   inputMode="numeric"
-                  className="w-full px-3 sm:px-4 py-3 rounded-xl border-2 border-pink-200 focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all text-center font-mono text-xl sm:text-2xl tracking-widest"
+                  className="input-premium bg-white shadow-sm text-center font-mono text-3xl tracking-[1em]"
                   required
                 />
               </div>
 
               {error && (
-                <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-xl text-sm">
-                  {error}
+                <div className="p-4 bg-red-50 text-red-700 rounded-2xl text-xs italic border border-red-100 animate-fade-in">
+                  ✦ {error}
                 </div>
               )}
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-pink-400 via-rose-400 to-fuchsia-400 text-white py-3 sm:py-4 rounded-xl font-bold text-base sm:text-lg shadow-lg shadow-pink-200 hover:shadow-xl hover:scale-[1.02] transition-all disabled:opacity-50 min-h-[48px]"
+                className="btn-premium w-full py-5 text-sm uppercase tracking-[0.3em]"
               >
-                💅 Iniciar Sesión
+                Acceder al Dashboard
               </button>
             </form>
           )}
 
-          <p className="text-center text-gray-500 mt-5 sm:mt-6 text-xs sm:text-sm px-2">
-            ¿Primera vez? <span className="text-pink-500">Tu PIN fue enviado por el salón</span>
-          </p>
+          <div className="mt-10 pt-8 border-t border-fresia-gold/10 text-center">
+            <p className="text-[10px] text-fresia-dark/40 uppercase tracking-widest leading-relaxed">
+              ¿No tienes un PIN? <br />
+              <span className="text-fresia-rose font-bold">Contacta al salón vía WhatsApp</span>
+            </p>
+          </div>
         </div>
 
-        {/* Decorative */}
-        <div className="text-center mt-6 sm:mt-8">
-          <p className="text-pink-300 text-xs sm:text-sm">✨ Salon de Uñas ✨</p>
-        </div>
+        <p className="text-center mt-12 text-[10px] uppercase tracking-[0.5em] font-bold text-fresia-cream/20">
+          Fresia Aesthetic & Wellness © 2024
+        </p>
       </div>
     </div>
   )

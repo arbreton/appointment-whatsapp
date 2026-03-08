@@ -19,64 +19,77 @@ export default function AdminLogin({ onLogin }) {
         body: JSON.stringify({ password })
       })
       const data = await response.json()
-      
+
       if (data.success) {
         onLogin({ role: 'admin', name: 'Admin', token: data.token })
         navigate('/admin/dashboard')
       } else {
-        setError('Contraseña inválida')
+        setError('Acceso denegado: Credenciales inválidas')
       }
     } catch (err) {
-      setError('Error al iniciar sesión. Por favor intenta de nuevo.')
+      setError('Error de conexión. Por favor intenta de nuevo.')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-800 via-gray-900 to-gray-800 flex items-center justify-center px-4 py-6 sm:py-12">
-      <div className="max-w-md w-full">
-        <div className="text-center mb-6 sm:mb-8">
-          <Link to="/" className="text-3xl sm:text-4xl">✨</Link>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white mt-3 sm:mt-4 px-2">Login de Admin</h1>
-          <p className="text-gray-400 mt-2 text-sm sm:text-base px-4">Ingresa la contraseña para acceder al panel</p>
+    <div className="min-h-screen bg-fresia-dark flex items-center justify-center p-6 relative overflow-hidden">
+      {/* Abstract Background Elements */}
+      <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-fresia-gold/5 rounded-full blur-[100px]"></div>
+      <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-fresia-rose/5 rounded-full blur-[100px]"></div>
+
+      <div className="max-w-md w-full relative z-10 animate-fade-in">
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-3 mb-6">
+            <span className="text-4xl">⚜️</span>
+            <span className="font-serif text-2xl font-bold tracking-[0.2em] text-fresia-cream uppercase">ADMINISTRATION</span>
+          </div>
+          <p className="text-fresia-gold text-[10px] uppercase font-bold tracking-[0.4em]">Fresia Aesthetic & Wellness</p>
         </div>
 
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-xl p-5 sm:p-8 border border-pink-100 mx-2 sm:mx-0">
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4 sm:mb-6">
-              <label className="block text-gray-700 font-semibold mb-2 text-sm sm:text-base">
-                Contraseña
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Ingresa la contraseña"
-                className="w-full px-3 sm:px-4 py-3 rounded-xl border-2 border-pink-200 focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all text-base"
-                required
-              />
+        <div className="glass-morphism rounded-[40px] p-10 border-white/5 shadow-2xl bg-white/[0.03]">
+          <h1 className="text-fresia-cream font-serif text-3xl mb-8 text-center italic">Panel de Gestión</h1>
+
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="w-12 h-12 border-2 border-fresia-gold border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+              <p className="text-fresia-cream/40 font-bold uppercase tracking-widest text-[10px]">Autenticando...</p>
             </div>
-
-            {error && (
-              <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-xl text-sm">
-                {error}
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-8">
+              <div className="space-y-3">
+                <label className="text-[10px] uppercase tracking-[0.3em] font-bold text-fresia-cream/30 ml-1">Contraseña de Maestro</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-fresia-cream outline-none focus:border-fresia-gold/50 focus:ring-4 focus:ring-fresia-gold/5 transition-all text-center tracking-[0.5em] font-mono"
+                  required
+                />
               </div>
-            )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-pink-400 via-rose-400 to-fuchsia-400 text-white py-3 sm:py-4 rounded-xl font-bold text-base sm:text-lg shadow-lg shadow-pink-200 hover:shadow-xl hover:scale-[1.02] transition-all disabled:opacity-50 min-h-[48px]"
-            >
-              {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
-            </button>
-          </form>
+              {error && (
+                <div className="p-4 bg-red-500/10 text-red-400 rounded-2xl text-[10px] uppercase tracking-widest font-bold text-center border border-red-500/20 italic">
+                  ✦ {error}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-fresia-gold hover:bg-fresia-cream hover:text-fresia-dark text-fresia-dark py-5 rounded-2xl font-bold text-xs uppercase tracking-[0.3em] shadow-2xl transition-all duration-500"
+              >
+                Acceder al Sistema
+              </button>
+            </form>
+          )}
         </div>
 
-        <div className="mt-5 sm:mt-6 text-center">
-          <Link to="/" className="text-gray-400 hover:text-gray-300 text-sm sm:text-base">
-            ← Volver al Inicio
+        <div className="mt-12 text-center">
+          <Link to="/" className="text-fresia-cream/30 hover:text-fresia-gold text-[10px] uppercase tracking-[0.2em] font-bold transition-colors">
+            ← Volver al Portal Público
           </Link>
         </div>
       </div>

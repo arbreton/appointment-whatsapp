@@ -7,9 +7,17 @@ export default {
   theme: {
     extend: {
       colors: {
-        'salon-pink': '#FFB6C1',
-        'salon-dark': '#2D2D2D',
-        'salon-gold': '#D4AF37',
+        'fresia': {
+          gold: '#E6BE8A',
+          rose: '#B76E79',
+          cream: '#FAF9F6',
+          dark: '#1A1A1A',
+          'rose-light': '#F5E6E8',
+        }
+      },
+      fontFamily: {
+        sans: ['Outfit', 'sans-serif'],
+        serif: ['Playfair Display', 'serif'],
       }
     },
   },

@@ -36,16 +36,13 @@ export default function AppointmentDetail({ customer }) {
     setError('')
 
     try {
-      // Calculate payment amount based on option
       let amountToPay = 0
       if (paymentOption === 'full') {
         amountToPay = appointment.amount - appointment.paidAmount
       } else {
-        // 20% deposit
         amountToPay = Math.round(appointment.amount * DEPOSIT_PERCENTAGE)
       }
 
-      // Call the payment API to create a Stripe Checkout session
       const response = await fetch('/.netlify/functions/payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -63,7 +60,6 @@ export default function AppointmentDetail({ customer }) {
         throw new Error(data.error)
       }
 
-      // Redirect to Stripe Checkout
       if (data.url) {
         window.location.href = data.url
       } else {
@@ -81,7 +77,6 @@ export default function AppointmentDetail({ customer }) {
       weekday: 'long',
       month: 'long',
       day: 'numeric',
-      year: 'numeric',
       hour: 'numeric',
       minute: '2-digit',
       hour12: true
@@ -90,19 +85,19 @@ export default function AppointmentDetail({ customer }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-rose-50 to-fuchsia-50">
-        <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-pink-500"></div>
+      <div className="min-h-screen flex items-center justify-center bg-fresia-dark">
+        <div className="w-12 h-12 border-2 border-fresia-gold border-t-transparent rounded-full animate-spin"></div>
       </div>
     )
   }
 
   if (!appointment) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-rose-50 to-fuchsia-50 px-4">
+      <div className="min-h-screen flex items-center justify-center bg-fresia-dark px-4 font-serif text-fresia-cream">
         <div className="text-center">
-          <p className="text-gray-600 mb-4">Cita no encontrada</p>
-          <Link to="/dashboard" className="text-pink-500 hover:underline">
-            Volver al Dashboard
+          <p className="text-2xl mb-8 italic">Cita no encontrada</p>
+          <Link to="/dashboard" className="btn-premium px-12 py-4 inline-block">
+            Volver
           </Link>
         </div>
       </div>
@@ -110,166 +105,159 @@ export default function AppointmentDetail({ customer }) {
   }
 
   const amountDue = appointment.amount - appointment.paidAmount
-  const isWaitlist = appointment.status === 'waitlist' || (appointment.paymentStatus === 'none' && appointment.paidAmount === 0)
   const canPay = amountDue > 0 && appointment.paymentStatus !== 'paid'
   const hasPaidSomething = (appointment.paidAmount || 0) > 0
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-fuchsia-50 pb-8">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-pink-400 via-rose-400 to-fuchsia-400 text-white shadow-lg">
-        <div className="max-w-2xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
-          <Link to="/dashboard" className="text-white/80 hover:text-white flex items-center gap-2 text-sm sm:text-base">
-            ← Volver al Dashboard
-          </Link>
+    <div className="min-h-screen bg-fresia-dark text-fresia-cream flex flex-col p-6 md:p-12 relative overflow-hidden">
+      {/* Background Ambience */}
+      <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-fresia-gold/5 rounded-full blur-[120px]"></div>
+
+      <header className="max-w-xl mx-auto w-full mb-12 relative z-10">
+        <Link to="/dashboard" className="text-[10px] uppercase tracking-[0.3em] font-bold opacity-30 hover:opacity-100 hover:text-fresia-gold transition-all block mb-12">
+          ← Volver al Panel
+        </Link>
+
+        <div className="text-center">
+          <span className="text-fresia-gold text-[10px] uppercase font-bold tracking-[0.4em] mb-4 block animate-fade-in">⚜️ Fresia Aesthetic & Wellness ⚜️</span>
+          <h1 className="text-4xl md:text-5xl font-serif italic text-fresia-cream">Confirmación de Cita</h1>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-2xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 border border-pink-100">
-          <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent mb-4 sm:mb-6">
-            💅 Detalles de la Cita
-          </h1>
-
-          <div className="space-y-2 sm:space-y-4">
-            <div className="flex justify-between py-2 sm:py-3 border-b border-pink-100 text-sm sm:text-base">
-              <span className="text-gray-600">Servicio</span>
-              <span className="font-semibold">{appointment.serviceType}</span>
-            </div>
-            <div className="flex justify-between py-2 sm:py-3 border-b border-pink-100 text-sm sm:text-base">
-              <span className="text-gray-600">Fecha y Hora</span>
-              <span className="font-semibold text-right max-w-[60%]">{formatDate(appointment.appointmentDate)}</span>
-            </div>
-            <div className="flex justify-between py-2 sm:py-3 border-b border-pink-100 text-sm sm:text-base">
-              <span className="text-gray-600">Estado</span>
-              <span className={`px-2 py-0.5 sm:py-1 rounded-full text-xs font-medium ${appointment.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                appointment.status === 'waitlist' ? 'bg-yellow-100 text-yellow-800' :
-                  appointment.status === 'completed' ? 'bg-pink-100 text-pink-800' :
-                    'bg-gray-100 text-gray-800'
-                }`}>
-                {appointment.status === 'confirmed' ? '✓ Confirmado' :
-                  appointment.status === 'waitlist' ? '⏳ Lista de espera' :
-                    appointment.status === 'completed' ? '✨ Completado' : appointment.status}
-              </span>
-            </div>
-            <div className="flex justify-between py-2 sm:py-3 border-b border-pink-100 text-sm sm:text-base">
-              <span className="text-gray-600">Monto Total</span>
-              <span className="font-semibold">${appointment.amount}</span>
-            </div>
-            <div className="flex justify-between py-2 sm:py-3 border-b border-pink-100 text-sm sm:text-base">
-              <span className="text-gray-600">Ya Pagado</span>
-              <span className="font-semibold text-green-600">${appointment.paidAmount || 0}</span>
-            </div>
-            <div className="flex justify-between py-2 sm:py-3 text-sm sm:text-base">
-              <span className="text-gray-600 font-semibold">Monto Pendiente</span>
-              <span className="font-bold text-pink-600 text-lg sm:text-xl">${amountDue}</span>
-            </div>
+      <main className="max-w-xl mx-auto w-full relative z-10 flex-1">
+        <div className="glass-morphism rounded-[40px] p-8 md:p-12 border-white/5 shadow-2xl relative bg-white/[0.02]">
+          {/* Status Ribbon */}
+          <div className="absolute top-0 right-12 -translate-y-1/2">
+            <span className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl ${appointment.status === 'confirmed' ? 'bg-green-500 text-white' :
+                appointment.status === 'waitlist' ? 'bg-fresia-gold text-fresia-dark' : 'bg-fresia-rose text-white'
+              }`}>
+              {appointment.status === 'confirmed' ? 'Confirmada' :
+                appointment.status === 'waitlist' ? 'Lista de espera' : appointment.status}
+            </span>
           </div>
 
-          {appointment.notes && (
-            <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-pink-50 rounded-xl">
-              <h3 className="font-semibold mb-2 text-sm sm:text-base">📝 Notas</h3>
-              <p className="text-gray-600 text-sm sm:text-base">{appointment.notes}</p>
+          <div className="space-y-10">
+            <div className="text-center pb-10 border-b border-fresia-gold/10">
+              <p className="text-[10px] uppercase tracking-widest font-bold opacity-30 mb-2">Servicio Solicitado</p>
+              <h2 className="text-3xl font-serif text-fresia-cream">{appointment.serviceType}</h2>
             </div>
-          )}
 
-          {/* Payment Section */}
-          {canPay && (
-            <div className="mt-6 sm:mt-8">
-              {error && (
-                <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-xl text-sm">
-                  {error}
+            <div className="grid grid-cols-2 gap-8 text-center sm:text-left">
+              <div>
+                <p className="text-[10px] uppercase tracking-widest font-bold opacity-30 mb-1">Fecha</p>
+                <div className="font-serif text-xl">{new Date(appointment.appointmentDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}</div>
+              </div>
+              <div>
+                <p className="text-[10px] uppercase tracking-widest font-bold opacity-30 mb-1">Horario</p>
+                <div className="font-serif text-xl">{new Date(appointment.appointmentDate).getHours()}:00</div>
+              </div>
+            </div>
+
+            <div className="space-y-6 pt-6 border-t border-fresia-gold/10">
+              <div className="flex justify-between items-center text-sm">
+                <span className="opacity-40 uppercase tracking-widest font-bold text-[10px]">Inversión Total</span>
+                <span className="font-serif text-xl">${appointment.amount}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="opacity-40 uppercase tracking-widest font-bold text-[10px]">Depósito Recibido</span>
+                <span className="font-serif text-xl text-green-400">-${appointment.paidAmount || 0}</span>
+              </div>
+              <div className="flex justify-between items-center pt-6 border-t border-fresia-gold/20">
+                <span className="text-fresia-gold uppercase tracking-[0.2em] font-black text-[12px]">Saldo Pendiente</span>
+                <span className="text-4xl font-serif text-fresia-cream font-bold">${amountDue}</span>
+              </div>
+            </div>
+
+            {canPay ? (
+              <div className="pt-8">
+                {error && <p className="mb-4 text-xs text-red-400 italic font-bold">✦ {error}</p>}
+                <button
+                  onClick={() => setShowPaymentModal(true)}
+                  className="w-full bg-fresia-gold text-fresia-dark py-5 rounded-2xl font-bold text-xs uppercase tracking-[0.3em] shadow-2xl hover:bg-fresia-cream transition-all duration-500"
+                >
+                  Realizar Pago Seguro
+                </button>
+                <p className="text-center text-[8px] uppercase tracking-[0.2em] font-bold opacity-20 mt-6">Pagos procesados por Stripe® • Apple Pay™ Compatible</p>
+              </div>
+            ) : appointment.paymentStatus === 'paid' && (
+              <div className="pt-8 text-center">
+                <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <span className="text-2xl">✓</span>
                 </div>
-              )}
-
-              <button
-                onClick={() => setShowPaymentModal(true)}
-                className="w-full bg-gradient-to-r from-green-400 to-emerald-500 text-white px-4 sm:px-6 py-3 sm:py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
-              >
-                💳 Pagar Ahora - ${amountDue}
-              </button>
-
-              <p className="text-center text-xs sm:text-sm text-gray-500 mt-3">
-                🔒 Pago seguro con Stripe (Apple Pay disponible)
-              </p>
-            </div>
-          )}
-
-          {appointment.paymentStatus === 'paid' && (
-            <div className="mt-6 sm:mt-8 p-3 sm:p-4 bg-green-50 rounded-xl text-center border border-green-200">
-              <span className="text-2xl sm:text-3xl">✅</span>
-              <p className="text-green-700 font-semibold mt-2 text-sm sm:text-base">¡Pagado Completo!</p>
-              <p className="text-green-600 text-xs sm:text-sm">Gracias por tu visita 💅</p>
-            </div>
-          )}
+                <p className="font-serif italic text-2xl mb-2">Gracias, {appointment.customerName}</p>
+                <p className="text-[10px] uppercase tracking-widest font-bold opacity-40">Tu experiencia ha sido liquidada con éxito.</p>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Payment Modal */}
-        {showPaymentModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center p-3 sm:p-4 z-50">
-            <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 w-full max-w-sm shadow-2xl">
-              <h2 className="text-lg sm:text-xl font-bold mb-4">💳 Opciones de Pago</h2>
+        {/* Brand footer */}
+        <div className="mt-20 text-center opacity-10">
+          <p className="text-[8px] uppercase tracking-[0.5em] font-bold">Elegance is the only beauty that never fades.</p>
+        </div>
+      </main>
 
-              <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
-                <label className={`flex items-center p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all ${paymentOption === 'full' ? 'border-pink-400 bg-pink-50' : 'border-gray-200'
-                  }`}>
+      {/* Payment Modal Refined */}
+      {showPaymentModal && (
+        <div className="fixed inset-0 bg-fresia-dark/95 backdrop-blur-xl flex items-center justify-center p-6 z-[100] animate-fade-in">
+          <div className="max-w-md w-full glass-morphism rounded-[40px] p-10 border-white/10 shadow-3xl relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-fresia-dark via-fresia-gold to-fresia-dark"></div>
+            <h2 className="text-fresia-cream font-serif text-2xl mb-8 italic">Opciones de Pago</h2>
+
+            <div className="space-y-4 mb-10">
+              <label className={`block p-6 rounded-3xl border transition-all cursor-pointer ${paymentOption === 'full' ? 'bg-fresia-gold/10 border-fresia-gold' : 'bg-white/5 border-white/5 opacity-50'}`}>
+                <input
+                  type="radio" name="payOption" value="full"
+                  checked={paymentOption === 'full'}
+                  onChange={() => setPaymentOption('full')}
+                  className="hidden"
+                />
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="font-serif text-lg">Total Pendiente</h3>
+                    <p className="text-[10px] uppercase tracking-widest font-bold opacity-40">Liquidación completa de la cita</p>
+                  </div>
+                  <span className="text-xl font-serif text-fresia-gold">${amountDue}</span>
+                </div>
+              </label>
+
+              {!hasPaidSomething && (
+                <label className={`block p-6 rounded-3xl border transition-all cursor-pointer ${paymentOption === 'deposit' ? 'bg-fresia-gold/10 border-fresia-gold' : 'bg-white/5 border-white/5 opacity-50'}`}>
                   <input
-                    type="radio"
-                    name="paymentOption"
-                    value="full"
-                    checked={paymentOption === 'full'}
-                    onChange={(e) => setPaymentOption(e.target.value)}
-                    className="w-4 h-4 sm:w-5 sm:h-5 text-pink-500"
+                    type="radio" name="payOption" value="deposit"
+                    checked={paymentOption === 'deposit'}
+                    onChange={() => setPaymentOption('deposit')}
+                    className="hidden"
                   />
-                  <div className="ml-3">
-                    <p className="font-semibold text-sm sm:text-base">Pago Completo</p>
-                    <p className="text-xs sm:text-sm text-gray-500">${amountDue}</p>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h3 className="font-serif text-lg">Depósito de Garantía</h3>
+                      <p className="text-[10px] uppercase tracking-widest font-bold opacity-40">20% para asegurar tu lugar</p>
+                    </div>
+                    <span className="text-xl font-serif text-fresia-gold">${Math.round(appointment.amount * DEPOSIT_PERCENTAGE)}</span>
                   </div>
                 </label>
+              )}
+            </div>
 
-                {!hasPaidSomething && (
-                  <label className={`flex items-center p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all ${paymentOption === 'deposit' ? 'border-pink-400 bg-pink-50' : 'border-gray-200'
-                    }`}>
-                    <input
-                      type="radio"
-                      name="paymentOption"
-                      value="deposit"
-                      checked={paymentOption === 'deposit'}
-                      onChange={(e) => setPaymentOption(e.target.value)}
-                      className="w-4 h-4 sm:w-5 sm:h-5 text-pink-500"
-                    />
-                    <div className="ml-3">
-                      <p className="font-semibold text-sm sm:text-base">Depósito Mínimo</p>
-                      <p className="text-xs sm:text-sm text-gray-500">20% del total (resto al terminar)</p>
-                    </div>
-                  </label>
-                )}
-              </div>
-
-              <div className="flex gap-2 sm:gap-3">
-                <button
-                  onClick={() => setShowPaymentModal(false)}
-                  className="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-gray-100 text-gray-600 font-semibold hover:bg-gray-200 transition-all text-sm sm:text-base"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={handlePayment}
-                  disabled={processing}
-                  className="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-pink-400 to-rose-400 text-white font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 text-sm sm:text-base"
-                >
-                  {processing ? 'Procesando...' : 'Pagar'}
-                </button>
-              </div>
-
-              <p className="text-center text-xs text-gray-400 mt-3 sm:mt-4">
-                🍎 Apple Pay disponible en el siguiente paso
-              </p>
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={() => setShowPaymentModal(false)}
+                className="py-4 rounded-2xl bg-white/5 text-fresia-cream/50 text-xs font-bold uppercase tracking-widest hover:bg-white/10 transition-all"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handlePayment}
+                disabled={processing}
+                className="py-4 rounded-2xl bg-fresia-gold text-fresia-dark text-xs font-bold uppercase tracking-widest shadow-xl hover:bg-fresia-cream transition-all disabled:opacity-50"
+              >
+                {processing ? 'Enviando...' : 'Proceder'}
+              </button>
             </div>
           </div>
-        )}
-      </main>
+        </div>
+      )}
     </div>
   )
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { appointmentApi, customerApi } from '../api'
-import { SERVICE_TYPES, DEPOSIT_AMOUNT, PRICES, TIME_SLOTS, APPOINTMENT_DURATION_MINS } from '../constants'
+import { SERVICE_TYPES, DEPOSIT_PERCENTAGE, PRICES, TIME_SLOTS, APPOINTMENT_DURATION_MINS } from '../constants'
 
 export default function AdminDashboard({ admin, onLogout }) {
   const [appointments, setAppointments] = useState([])
@@ -258,10 +258,10 @@ export default function AdminDashboard({ admin, onLogout }) {
 
   const getStatusBadge = (status) => {
     const styles = {
-      waitlist: 'bg-yellow-100 text-yellow-800',
-      confirmed: 'bg-green-100 text-green-800',
-      completed: 'bg-pink-100 text-pink-800',
-      cancelled: 'bg-red-100 text-red-800'
+      waitlist: 'bg-fresia-gold/10 text-fresia-gold',
+      confirmed: 'bg-green-50 text-green-700',
+      completed: 'bg-fresia-rose/10 text-fresia-rose',
+      cancelled: 'bg-red-50 text-red-600'
     }
     return styles[status] || 'bg-gray-100 text-gray-800'
   }
@@ -279,9 +279,9 @@ export default function AdminDashboard({ admin, onLogout }) {
   const getPaymentText = (paymentStatus) => {
     const texts = {
       none: 'Lista de espera',
-      partial: 'Anticipo',
+      partial: 'Depósito parcial',
       paid: 'Pagado',
-      pending_payment: 'Por pagar'
+      pending_payment: 'Pendiente'
     }
     return texts[paymentStatus] || paymentStatus
   }
@@ -290,9 +290,9 @@ export default function AdminDashboard({ admin, onLogout }) {
     const texts = {
       efectivo: '💵 Efectivo',
       stripe: '💳 Stripe',
-      transferencia: '🏦 Transferencia'
+      transferencia: '🏦 Transf.'
     }
-    return texts[paymentType] || 'No definido'
+    return texts[paymentType] || '–'
   }
 
   const copyLink = (link) => {
@@ -407,323 +407,233 @@ export default function AdminDashboard({ admin, onLogout }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-fuchsia-50">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-pink-400 via-rose-400 to-fuchsia-400 text-white shadow-xl">
-        <div className="max-w-6xl mx-auto px-4 py-5 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <span className="text-3xl">💅✨</span>
-            <h1 className="text-xl font-bold">Panel de Admin</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <Link
-              to="/admin/customers"
-              className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-xl transition-all flex items-center gap-2"
-            >
-              👥 Clientes
-            </Link>
-            <button
-              onClick={onLogout}
-              className="text-white/80 hover:text-white"
-            >
-              Cerrar sesión
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Decorative */}
-      <div className="relative overflow-hidden h-4">
-        <div className="absolute top-0 left-10 text-pink-200 text-4xl opacity-50">🌸</div>
-        <div className="absolute top-0 right-20 text-rose-200 text-3xl opacity-50">🌺</div>
-      </div>
-
-      {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        {/* Create Customer Section */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-6 mb-6 border border-pink-100">
-          <h2 className="text-lg font-bold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent mb-4">Crear Nuevo Cliente</h2>
-          <div className="flex flex-col md:flex-row gap-4 mb-4">
-            <input
-              type="text"
-              value={newCustomer.name}
-              onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })}
-              placeholder="Nombre del cliente"
-              className="flex-1 px-4 py-3 rounded-xl border-2 border-pink-200 focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all"
-            />
-            <input
-              type="tel"
-              value={newCustomer.phone}
-              onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })}
-              placeholder="Número de teléfono"
-              className="flex-1 px-4 py-3 rounded-xl border-2 border-pink-200 focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all"
-            />
-            <button
-              onClick={handleCreateCustomer}
-              disabled={creatingCustomer || !newCustomer.phone || !newCustomer.name}
-              className="bg-gradient-to-r from-pink-400 to-rose-400 text-white px-6 py-3 rounded-xl font-semibold shadow-lg shadow-pink-200 hover:shadow-xl transition-all disabled:opacity-50 whitespace-nowrap"
-            >
-              {creatingCustomer ? 'Creando...' : '✨ Crear Cliente'}
-            </button>
+    <div className="min-h-screen bg-fresia-cream flex flex-col md:flex-row">
+      {/* Premium Sidebar */}
+      <aside className="w-full md:w-64 bg-fresia-dark text-fresia-cream flex-shrink-0 sticky top-0 md:h-screen z-50">
+        <div className="p-8">
+          <div className="flex items-center gap-3 mb-12">
+            <span className="text-2xl">⚜️</span>
+            <span className="font-serif text-xl font-bold tracking-[0.2em] uppercase">FRESIA</span>
           </div>
 
-          {createdCustomer && (
-            <div className="p-5 bg-gradient-to-r from-pink-50 to-rose-50 rounded-2xl border border-pink-200">
-              <p className="font-semibold text-green-800 flex items-center gap-2">✓ ¡Cliente creado exitosamente!</p>
-              <p className="text-sm text-gray-600">Nombre: {createdCustomer.name}</p>
-              <p className="text-sm text-gray-600">Teléfono: {createdCustomer.phone}</p>
-              <p className="text-2xl font-bold text-pink-600 my-2">PIN: {createdCustomer.pin}</p>
-              <div className="flex gap-2 mt-3 flex-wrap">
-                <button
-                  onClick={() => {
-                    const link = generateLoginLink(createdCustomer.phone)
-                    copyLink(link)
-                  }}
-                  className="bg-white border border-pink-200 text-pink-600 px-4 py-2 rounded-xl text-sm hover:bg-pink-50 transition-all"
-                >
-                  📋 Copiar Link
-                </button>
-                <button
-                  onClick={() => {
-                    const link = generateLoginLink(createdCustomer.phone)
-                    sendWhatsAppMessage(createdCustomer.phone, `Hola ${createdCustomer.name}, tu cuenta ha sido creada. Tu PIN es: ${createdCustomer.pin}. Aquí está tu link para agendar: ${link}`)
-                  }}
-                  className="bg-green-500 text-white px-4 py-2 rounded-xl text-sm hover:bg-green-600 transition-all flex items-center gap-1"
-                >
-                  📱 Enviar WhatsApp
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Generate Link Section */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-6 mb-6 border border-pink-100">
-          <h2 className="text-lg font-bold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent mb-4">📅 Crear Cita con Fecha/Hora</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4 relative">
-            <div className="relative">
-              <input
-                type="tel"
-                value={newAppointment.phone}
-                onChange={(e) => {
-                  setNewAppointment({ ...newAppointment, phone: e.target.value })
-                  searchCustomers(e.target.value, 'phone')
-                }}
-                onFocus={() => newAppointment.phone && searchCustomers(newAppointment.phone, 'phone')}
-                placeholder="Teléfono"
-                className="w-full px-4 py-3 rounded-xl border-2 border-pink-200 focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all"
-              />
-              {showSuggestions && customerSuggestions.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white border border-pink-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
-                  {customerSuggestions.map((c) => (
-                    <button
-                      key={c._id}
-                      onClick={() => selectCustomer(c)}
-                      className="w-full text-left px-4 py-3 hover:bg-pink-50 border-b border-pink-100 last:border-0"
-                    >
-                      <div className="font-medium">{c.name}</div>
-                      <div className="text-sm text-gray-500">{c.phone}</div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div className="relative">
-              <input
-                type="text"
-                value={newAppointment.name}
-                onChange={(e) => {
-                  setNewAppointment({ ...newAppointment, name: e.target.value })
-                  searchCustomers(e.target.value, 'name')
-                }}
-                onFocus={() => newAppointment.name && searchCustomers(newAppointment.name, 'name')}
-                placeholder="Nombre del cliente"
-                className="w-full px-4 py-3 rounded-xl border-2 border-pink-200 focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all"
-              />
-              {showSuggestions && customerSuggestions.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white border border-pink-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
-                  {customerSuggestions.map((c) => (
-                    <button
-                      key={c._id}
-                      onClick={() => selectCustomer(c)}
-                      className="w-full text-left px-4 py-3 hover:bg-pink-50 border-b border-pink-100 last:border-0"
-                    >
-                      <div className="font-medium">{c.name}</div>
-                      <div className="text-sm text-gray-500">{c.phone}</div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-            <select
-              value={newAppointment.service}
-              onChange={(e) => setNewAppointment({
-                ...newAppointment,
-                service: e.target.value,
-                amount: PRICES[e.target.value] || 0
-              })}
-              className="px-4 py-3 rounded-xl border-2 border-pink-200 focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all"
-            >
-              {SERVICE_TYPES.map(s => (
-                <option key={s.id} value={s.name}>{s.name} - ${s.price}</option>
-              ))}
-            </select>
-            <input
-              type="date"
-              value={newAppointment.date}
-              onChange={(e) => setNewAppointment({ ...newAppointment, date: e.target.value })}
-              className="px-4 py-3 rounded-xl border-2 border-pink-200 focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all"
-            />
-            <select
-              value={newAppointment.time}
-              onChange={(e) => setNewAppointment({ ...newAppointment, time: e.target.value })}
-              className="px-4 py-3 rounded-xl border-2 border-pink-200 focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all"
-            >
-              <option value="" disabled>Hora</option>
-              {availableSlots.map(time => (
-                <option key={time} value={time}>{time}</option>
-              ))}
-            </select>
-            {availableSlots.length === 0 && newAppointment.date && (
-              <p className="text-red-500 text-xs mt-1 col-span-full">No hay horarios disponibles.</p>
-            )}
-            <button
-              onClick={handleCreateAppointment}
-              className="bg-gradient-to-r from-pink-400 to-rose-400 text-white px-6 py-3 rounded-xl font-semibold shadow-lg shadow-pink-200 hover:shadow-xl transition-all"
-            >
-              ✨ Crear Cita
-            </button>
-          </div>
-        </div>
-
-        {/* Generate Link Section */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-6 mb-6 border border-pink-100">
-          <h2 className="text-lg font-bold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent mb-4">Generar Enlace para Cliente</h2>
-          <div className="flex flex-col md:flex-row gap-4 mb-4">
-            <input
-              type="tel"
-              value={customerPhone}
-              onChange={(e) => setCustomerPhone(e.target.value)}
-              placeholder="Número de teléfono del cliente"
-              className="flex-1 px-4 py-3 rounded-xl border-2 border-pink-200 focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all"
-            />
-            <button
-              onClick={generateBookingLink}
-              disabled={!customerPhone}
-              className="bg-gradient-to-r from-pink-400 to-rose-400 text-white px-6 py-3 rounded-xl font-semibold shadow-lg shadow-pink-200 hover:shadow-xl transition-all disabled:opacity-50 whitespace-nowrap"
-            >
-              ✨ Generar Enlace
-            </button>
-          </div>
-          {whatsappLink && (
-            <div className="flex gap-2 items-center flex-wrap">
-              <div className="flex-1 p-4 bg-pink-50 rounded-xl border border-pink-100">
-                <code className="text-sm break-all text-gray-700">{whatsappLink}</code>
-              </div>
-              <button
-                onClick={() => copyLink(whatsappLink)}
-                className="bg-white border border-pink-200 text-pink-600 px-4 py-2 rounded-xl hover:bg-pink-50 transition-all"
-              >
-                📋 Copiar
-              </button>
-              <button
-                onClick={() => {
-                  const waMessage = `Hola, aquí está tu enlace para iniciar sesión y agendar tu cita: ${whatsappLink}`
-                  sendWhatsAppMessage(customerPhone, waMessage)
-                }}
-                className="bg-green-500 text-white px-4 py-2 rounded-xl hover:bg-green-600 transition-all flex items-center gap-2"
-              >
-                📱 WhatsApp
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Filters and View Toggle */}
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
-          <div className="flex gap-2 flex-wrap">
-            {[
-              { key: 'all', label: 'Todas' },
-              { key: 'pending', label: 'Pendientes' },
-              { key: 'confirmed', label: 'Confirmadas' },
-              { key: 'completed', label: 'Completadas' },
-              { key: 'cancelled', label: 'Canceladas' }
-            ].map((item) => (
-              <button
-                key={item.key}
-                onClick={() => setFilter(item.key)}
-                className={`px-4 py-2 rounded-xl font-medium capitalize transition-colors ${filter === item.key
-                  ? 'bg-pink-500 text-white shadow-lg shadow-pink-300'
-                  : 'bg-white text-gray-600 hover:bg-pink-100 border border-pink-100'
-                  }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-          <div className="flex gap-2 md:ml-auto">
+          <nav className="space-y-4">
             <button
               onClick={() => setViewMode('list')}
-              className={`px-4 py-2 rounded-xl font-medium transition-colors ${viewMode === 'list'
-                ? 'bg-rose-500 text-white shadow-lg shadow-rose-300'
-                : 'bg-white text-gray-600 hover:bg-rose-100 border border-rose-100'
-                }`}
+              className={`w-full flex items-center gap-4 p-4 rounded-2xl text-xs font-bold tracking-widest transition-all ${viewMode === 'list' ? 'bg-fresia-gold text-fresia-dark shadow-xl' : 'hover:bg-white/5 opacity-50 hover:opacity-100'}`}
             >
-              📋 Lista
+              <span>📋</span> GESTIÓN
             </button>
             <button
               onClick={() => setViewMode('calendar')}
-              className={`px-4 py-2 rounded-xl font-medium transition-colors ${viewMode === 'calendar'
-                ? 'bg-rose-500 text-white shadow-lg shadow-rose-300'
-                : 'bg-white text-gray-600 hover:bg-rose-100 border border-rose-100'
-                }`}
+              className={`w-full flex items-center gap-4 p-4 rounded-2xl text-xs font-bold tracking-widest transition-all ${viewMode === 'calendar' ? 'bg-fresia-gold text-fresia-dark shadow-xl' : 'hover:bg-white/5 opacity-50 hover:opacity-100'}`}
             >
-              📅 Calendario
+              <span>📅</span> CALENDARIO
             </button>
+            <Link
+              to="/admin/customers"
+              className="w-full flex items-center gap-4 p-4 rounded-2xl text-xs font-bold tracking-widest opacity-50 hover:opacity-100 hover:bg-white/5 transition-all"
+            >
+              <span>👥</span> CLIENTES
+            </Link>
+          </nav>
+        </div>
+
+        <div className="mt-auto p-8 border-t border-white/5">
+          <button onClick={onLogout} className="flex items-center gap-2 text-[10px] uppercase tracking-widest opacity-30 hover:opacity-100 transition-opacity">
+            <span>✕</span> Cerrar Sesión
+          </button>
+        </div>
+      </aside>
+
+      <main className="flex-1 p-6 md:p-12 animate-fade-in overflow-y-auto">
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
+          <div>
+            <span className="text-fresia-rose font-serif italic text-xl mb-1 block">Master Dashboard</span>
+            <h1 className="text-4xl md:text-5xl font-serif text-fresia-dark font-bold">Resumen de Citas</h1>
+          </div>
+
+          <div className="flex gap-2 p-1 bg-white/50 backdrop-blur-sm rounded-2xl border border-fresia-gold/10">
+            {['all', 'pending', 'confirmed'].map(k => (
+              <button
+                key={k}
+                onClick={() => setFilter(k)}
+                className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === k ? 'bg-fresia-dark text-white shadow-lg' : 'text-fresia-dark/40 hover:text-fresia-dark/60'}`}
+              >
+                {k === 'pending' ? 'Por Atender' : k}
+              </button>
+            ))}
+          </div>
+        </header>
+
+        {/* Action Grid */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-12">
+          {/* Quick Create Appointment */}
+          <div className="glass-card rounded-[40px] p-8 md:p-10 border-white/50 shadow-2xl">
+            <h2 className="font-serif text-2xl text-fresia-dark mb-8 flex items-center gap-3">
+              <span className="text-fresia-gold">✦</span> Agendar Nueva Cita
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 relative">
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase tracking-widest font-bold text-fresia-dark/40 ml-1">Teléfono</label>
+                <input
+                  type="tel"
+                  value={newAppointment.phone}
+                  onChange={(e) => {
+                    setNewAppointment({ ...newAppointment, phone: e.target.value })
+                    searchCustomers(e.target.value, 'phone')
+                  }}
+                  onFocus={() => newAppointment.phone && searchCustomers(newAppointment.phone, 'phone')}
+                  className="input-premium bg-white h-14"
+                  placeholder="+521"
+                />
+                {showSuggestions && customerSuggestions.length > 0 && (
+                  <div className="absolute z-20 w-1/2 mt-1 bg-white border border-fresia-gold/10 rounded-2xl shadow-2xl max-h-48 overflow-y-auto p-2">
+                    {customerSuggestions.map((c) => (
+                      <button key={c._id} onClick={() => selectCustomer(c)} className="w-full text-left p-3 hover:bg-fresia-rose-light rounded-xl transition-colors">
+                        <div className="text-sm font-bold text-fresia-dark">{c.name}</div>
+                        <div className="text-[10px] text-fresia-dark/40">{c.phone}</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase tracking-widest font-bold text-fresia-dark/40 ml-1">Nombre</label>
+                <input
+                  type="text"
+                  value={newAppointment.name}
+                  onChange={(e) => {
+                    setNewAppointment({ ...newAppointment, name: e.target.value })
+                    searchCustomers(e.target.value, 'name')
+                  }}
+                  onFocus={() => newAppointment.name && searchCustomers(newAppointment.name, 'name')}
+                  className="input-premium bg-white h-14"
+                  placeholder="Nombre Completo"
+                />
+              </div>
+              <div className="sm:col-span-2 space-y-2">
+                <label className="text-[10px] uppercase tracking-widest font-bold text-fresia-dark/40 ml-1">Servicio</label>
+                <select
+                  value={newAppointment.service}
+                  onChange={(e) => setNewAppointment({
+                    ...newAppointment,
+                    service: e.target.value,
+                    amount: PRICES[e.target.value] || 0
+                  })}
+                  className="input-premium bg-white h-14 appearance-none"
+                >
+                  {SERVICE_TYPES.map(s => <option key={s.id} value={s.name}>{s.name} — ${s.price}</option>)}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase tracking-widest font-bold text-fresia-dark/40 ml-1">Fecha</label>
+                <input
+                  type="date"
+                  value={newAppointment.date}
+                  onChange={(e) => setNewAppointment({ ...newAppointment, date: e.target.value })}
+                  className="input-premium bg-white h-14"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase tracking-widest font-bold text-fresia-dark/40 ml-1">Hora</label>
+                <select
+                  value={newAppointment.time}
+                  onChange={(e) => setNewAppointment({ ...newAppointment, time: e.target.value })}
+                  className="input-premium bg-white h-14"
+                >
+                  {availableSlots.map(time => <option key={time} value={time}>{time}</option>)}
+                </select>
+              </div>
+              <button
+                onClick={handleCreateAppointment}
+                className="btn-premium sm:col-span-2 py-5 text-sm uppercase tracking-[0.2em] shadow-xl"
+              >
+                Confirmar y Notificar WhatsApp
+              </button>
+            </div>
+          </div>
+
+          {/* Tools Card */}
+          <div className="space-y-8">
+            <div className="glass-card rounded-[40px] p-8 border-white/50 shadow-xl overflow-hidden relative">
+              <div className="absolute top-0 right-0 p-8 text-4xl opacity-10">🌍</div>
+              <h2 className="font-serif text-2xl text-fresia-dark mb-6">Generador de Enlaces</h2>
+              <div className="flex gap-4 mb-4">
+                <input
+                  type="tel"
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  placeholder="Número del cliente"
+                  className="input-premium bg-white flex-1"
+                />
+                <button
+                  onClick={generateBookingLink}
+                  className="bg-fresia-dark text-white px-8 rounded-2xl text-xs font-bold uppercase tracking-widest hover:bg-fresia-rose transition-all"
+                >
+                  Crear
+                </button>
+              </div>
+              {whatsappLink && (
+                <div className="p-4 bg-fresia-rose-light border border-fresia-rose/10 rounded-2xl flex items-center justify-between">
+                  <div className="truncate text-[10px] font-mono opacity-60 mr-4">{whatsappLink}</div>
+                  <button onClick={() => copyLink(whatsappLink)} className="text-[10px] font-bold uppercase tracking-widest text-fresia-rose">Copiar</button>
+                </div>
+              )}
+            </div>
+
+            <div className="bg-fresia-dark rounded-[40px] p-8 text-white shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-fresia-gold/10 rounded-bl-full translate-x-12 -translate-y-12"></div>
+              <h2 className="font-serif text-2xl mb-6">Nuevo Cliente</h2>
+              <div className="space-y-4">
+                <input
+                  type="text"
+                  value={newCustomer.name}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })}
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-fresia-cream outline-none focus:border-fresia-gold/50 transition-all text-sm"
+                  placeholder="Nombre"
+                />
+                <input
+                  type="tel"
+                  value={newCustomer.phone}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })}
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-fresia-cream outline-none focus:border-fresia-gold/50 transition-all text-sm"
+                  placeholder="WhatsApp"
+                />
+                <button
+                  onClick={handleCreateCustomer}
+                  className="w-full bg-fresia-gold py-4 rounded-2xl text-fresia-dark text-xs font-bold uppercase tracking-widest shadow-xl"
+                >
+                  Registrar Maestro
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Appointments List */}
+        {/* Dynamic Display */}
         {loading ? (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
-          </div>
-        ) : getFilteredAppointments().length === 0 ? (
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-12 text-center border border-pink-100">
-            <span className="text-6xl">📅</span>
-            <p className="text-pink-100 text-sm">Fresia Aesthetic</p>
-          </div>
+          <div className="py-20 text-center"><div className="w-12 h-12 border-2 border-fresia-gold border-t-transparent rounded-full animate-spin mx-auto"></div></div>
         ) : viewMode === 'calendar' ? (
-          /* Calendar View */
-          <div className="space-y-6">
-            {Object.entries(getAppointmentsByDate()).sort(([a], [b]) => new Date(a) - new Date(b)).map(([date, dayAppointments]) => (
-              <div key={date} className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-pink-100 overflow-hidden">
-                <div className="bg-gradient-to-r from-pink-400 via-rose-400 to-fuchsia-400 px-6 py-3">
-                  <h3 className="text-white font-semibold">
-                    {new Date(date).toLocaleDateString('es-ES', { weekday: 'long', month: 'long', day: 'numeric' })}
-                    <span className="ml-2 text-white/80">({dayAppointments.length} citas)</span>
-                  </h3>
-                </div>
-                <div className="p-4 space-y-2">
-                  {dayAppointments.map(apt => (
-                    <div key={apt._id} className="flex items-center gap-4 p-3 rounded-xl bg-pink-50/50 hover:bg-pink-100/50 transition-colors">
-                      <div className="w-20 text-center">
-                        <div className="text-lg font-bold text-pink-600">
-                          {new Date(apt.appointmentDate).toLocaleTimeString('es-ES', { hour: 'numeric', minute: '2-digit', hour12: true })}
-                        </div>
+          <div className="space-y-12 pb-20">
+            {Object.entries(getAppointmentsByDate()).sort(([a], [b]) => new Date(a) - new Date(b)).map(([date, dayApts]) => (
+              <div key={date}>
+                <h3 className="font-serif text-2xl text-fresia-dark mb-6 flex items-center gap-4">
+                  {new Date(date).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
+                  <div className="h-0.5 bg-fresia-gold/20 flex-1"></div>
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {dayApts.map(apt => (
+                    <div key={apt._id} className="glass-card rounded-3xl p-6 border-white/50 hover:shadow-2xl transition-all group overflow-hidden relative">
+                      <div className="flex justify-between items-start mb-6">
+                        <span className="font-mono text-2xl font-bold text-fresia-rose">{new Date(apt.appointmentDate).getHours()}:00</span>
+                        <span className={`px-3 py-1 rounded-full text-[8px] uppercase tracking-widest font-black ${getStatusBadge(apt.status)}`}>{getStatusText(apt.status)}</span>
                       </div>
-                      <div className="flex-1">
-                        <div className="font-medium text-gray-800">{apt.customerName}</div>
-                        <div className="text-sm text-gray-500">{apt.serviceType}</div>
-                      </div>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusBadge(apt.status)}`}>
-                        {getStatusText(apt.status)}
-                      </span>
-                      <div className="text-right">
-                        <div className="text-sm font-medium">${apt.amount}</div>
-                        <div className={`text-xs ${apt.paymentStatus === 'paid' ? 'text-green-600' : 'text-orange-600'}`}>
-                          {apt.paymentStatus === 'paid' ? '✓ Pagado' : 'Pendiente'}
-                        </div>
+                      <h4 className="font-serif text-xl text-fresia-dark truncate mb-1">{apt.customerName}</h4>
+                      <p className="text-[10px] uppercase tracking-widest text-fresia-dark/40 font-bold mb-6">{apt.serviceType}</p>
+
+                      <div className="flex gap-2 pt-6 border-t border-fresia-gold/10">
+                        {apt.status === 'waitlist' && <button onClick={() => updateAppointmentStatus(apt._id, 'confirmed')} className="flex-1 bg-fresia-dark text-white text-[8px] font-black tracking-widest py-3 rounded-xl uppercase">Aprobar</button>}
+                        <button onClick={() => sendWhatsAppMessage(apt.customerPhone, `Hola ${apt.customerName}!`)} className="p-3 bg-green-50 text-green-600 rounded-xl">📱</button>
                       </div>
                     </div>
                   ))}
@@ -732,154 +642,51 @@ export default function AdminDashboard({ admin, onLogout }) {
             ))}
           </div>
         ) : (
-          /* List View */
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl overflow-hidden border border-pink-100">
+          <div className="glass-card rounded-[40px] border-white/50 shadow-2xl overflow-hidden pb-10">
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gradient-to-r from-pink-400 via-rose-400 to-fuchsia-400 text-white">
-                  <tr>
-                    <th className="px-4 py-4 text-left text-sm font-semibold">Cliente</th>
-                    <th className="px-4 py-4 text-left text-sm font-semibold">Servicio</th>
-                    <th className="px-4 py-4 text-left text-sm font-semibold">Fecha</th>
-                    <th className="px-4 py-4 text-left text-sm font-semibold">Estado</th>
-                    <th className="px-4 py-4 text-left text-sm font-semibold">Pago</th>
-                    <th className="px-4 py-4 text-left text-sm font-semibold">Acciones</th>
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="bg-fresia-dark text-fresia-cream/40 overflow-hidden">
+                    <th className="px-8 py-6 text-[10px] uppercase tracking-[0.3em] font-black">Cliente</th>
+                    <th className="px-8 py-6 text-[10px] uppercase tracking-[0.3em] font-black">Servicio</th>
+                    <th className="px-8 py-6 text-[10px] uppercase tracking-[0.3em] font-black">Horario</th>
+                    <th className="px-8 py-6 text-[10px] uppercase tracking-[0.3em] font-black">Pago</th>
+                    <th className="px-8 py-6 text-[10px] uppercase tracking-[0.3em] font-black">Acciones</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-pink-100">
+                <tbody className="divide-y divide-fresia-gold/5">
                   {getFilteredAppointments().map((apt) => (
-                    <tr key={apt._id} className="hover:bg-pink-50/50 transition-colors">
-                      <td className="px-4 py-4">
-                        <div className="font-medium text-gray-800">{apt.customerName}</div>
-                        <div className="text-sm text-gray-500">{apt.customerPhone}</div>
+                    <tr key={apt._id} className="hover:bg-fresia-rose-light/20 transition-colors">
+                      <td className="px-8 py-8">
+                        <div className="font-serif text-lg text-fresia-dark">{apt.customerName}</div>
+                        <div className="text-[10px] uppercase tracking-widest font-bold text-fresia-dark/30">{apt.customerPhone}</div>
                       </td>
-                      <td className="px-4 py-4 text-gray-700">{apt.serviceType}</td>
-                      <td className="px-4 py-4 text-gray-600">{formatDate(apt.appointmentDate)}</td>
-                      <td className="px-4 py-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusBadge(apt.status)}`}>
-                          {getStatusText(apt.status)}
-                        </span>
+                      <td className="px-8 py-8">
+                        <span className={`px-2 py-1 rounded text-[8px] uppercase tracking-widest font-black inline-block mb-2 ${getStatusBadge(apt.status)}`}>{getStatusText(apt.status)}</span>
+                        <div className="text-sm font-medium text-fresia-dark">{apt.serviceType}</div>
                       </td>
-                      <td className="px-4 py-4">
-                        <div className="text-sm">
-                          <div className="font-medium">${apt.paidAmount} / ${apt.amount}</div>
-                          <div className={`text-xs ${apt.paymentStatus === 'paid' ? 'text-green-600' : 'text-orange-600'}`}>
-                            {getPaymentText(apt.paymentStatus)}
-                          </div>
-                          {apt.paymentType && (
-                            <div className="text-xs text-gray-500 mt-1">
-                              {getPaymentTypeText(apt.paymentType)}
-                            </div>
-                          )}
-                        </div>
-                        {/* Payment Status Buttons */}
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {apt.paymentStatus !== 'partial' && apt.status !== 'cancelled' && apt.status !== 'completed' && (
-                            <button
-                              onClick={() => {
-                                const deposit = Math.round(apt.amount * 0.5)
-                                updatePaymentStatus(apt._id, 'partial', deposit)
-                              }}
-                              className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded hover:bg-yellow-200"
-                              title="Marcar anticipo (50%)"
-                            >
-                              💰 Anticipo
+                      <td className="px-8 py-8">
+                        <div className="text-sm font-bold text-fresia-dark">{new Date(apt.appointmentDate).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}</div>
+                        <div className="text-[10px] uppercase tracking-widest text-fresia-rose font-bold">{new Date(apt.appointmentDate).getHours()}:00</div>
+                      </td>
+                      <td className="px-8 py-8">
+                        <div className="text-xs font-bold text-fresia-dark mb-1">${apt.paidAmount} / ${apt.amount}</div>
+                        <div className={`text-[8px] uppercase tracking-widest font-black mb-3 ${apt.paymentStatus === 'paid' ? 'text-green-600' : 'text-fresia-gold'}`}>{getPaymentText(apt.paymentStatus)}</div>
+                        <div className="flex gap-1">
+                          {['efectivo', 'stripe'].map(type => (
+                            <button key={type} onClick={() => updatePaymentType(apt._id, type)} className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs ${apt.paymentType === type ? 'bg-fresia-dark text-white' : 'bg-fresia-cream border border-fresia-gold/20 opacity-50'}`}>
+                              {type === 'efectivo' ? '💵' : '💳'}
                             </button>
-                          )}
-                          {apt.paymentStatus !== 'paid' && apt.status !== 'cancelled' && apt.status !== 'completed' && (
-                            <button
-                              onClick={() => updatePaymentStatus(apt._id, 'paid', apt.amount)}
-                              className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded hover:bg-green-200"
-                              title="Marcar pagado completo"
-                            >
-                              ✓ Pagado
-                            </button>
-                          )}
-                        </div>
-                        {/* Payment Type Buttons */}
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          <button
-                            onClick={() => updatePaymentType(apt._id, 'efectivo')}
-                            className={`text-xs px-2 py-1 rounded ${apt.paymentType === 'efectivo' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-                            title="Efectivo"
-                          >
-                            💵
-                          </button>
-                          <button
-                            onClick={() => updatePaymentType(apt._id, 'stripe')}
-                            className={`text-xs px-2 py-1 rounded ${apt.paymentType === 'stripe' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-                            title="Stripe"
-                          >
-                            💳
-                          </button>
-                          <button
-                            onClick={() => updatePaymentType(apt._id, 'transferencia')}
-                            className={`text-xs px-2 py-1 rounded ${apt.paymentType === 'transferencia' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-                            title="Transferencia"
-                          >
-                            🏦
-                          </button>
+                          ))}
                         </div>
                       </td>
-                      <td className="px-4 py-4">
+                      <td className="px-8 py-8">
                         <div className="flex flex-col gap-2">
-                          {/* Status Actions */}
-                          {apt.status === 'waitlist' && (
-                            <button
-                              onClick={() => updateAppointmentStatus(apt._id, 'confirmed')}
-                              className="text-xs bg-green-500 text-white px-3 py-1.5 rounded-lg hover:bg-green-600 transition-colors"
-                            >
-                              ✓ Confirmar
-                            </button>
-                          )}
-                          {apt.status === 'confirmed' && (
-                            <button
-                              onClick={() => updateAppointmentStatus(apt._id, 'completed')}
-                              className="text-xs bg-pink-500 text-white px-3 py-1.5 rounded-lg hover:bg-pink-600 transition-colors"
-                            >
-                              ✓ Completar
-                            </button>
-                          )}
-                          {apt.status !== 'cancelled' && apt.status !== 'completed' && (
-                            <button
-                              onClick={() => updateAppointmentStatus(apt._id, 'cancelled')}
-                              className="text-xs bg-red-500 text-white px-3 py-1.5 rounded-lg hover:bg-red-600 transition-colors"
-                            >
-                              ✕ Cancelar
-                            </button>
-                          )}
-
-                          {/* Payment Link */}
-                          {apt.paymentStatus !== 'paid' && (
-                            <button
-                              onClick={() => {
-                                const link = generatePaymentLink(apt)
-                                const amountDue = apt.amount - apt.paidAmount
-                                sendWhatsAppMessage(
-                                  apt.customerPhone,
-                                  `Hola ${apt.customerName}, por favor completa tu pago de $${amountDue}. Paga aquí: ${link}`
-                                )
-                              }}
-                              className="text-xs bg-yellow-500 text-white px-3 py-1.5 rounded-lg hover:bg-yellow-600 transition-colors"
-                            >
-                              💳 Enviar Pago
-                            </button>
-                          )}
-
-                          {/* WhatsApp Actions */}
-                          <button
-                            onClick={() => {
-                              const messages = {
-                                waitlist: `¡Hola ${apt.customerName}! Estás en la lista de espera para ${apt.serviceType}. Te contactaremos pronto.`,
-                                confirmed: `¡Hola ${apt.customerName}! Tu cita para ${apt.serviceType} está confirmada para el ${formatDate(apt.appointmentDate)}. ¡Nos vemos pronto! 💅`,
-                                completed: `¡Hola ${apt.customerName}! Gracias por visitarnos. ¡Tus uñas quedaron hermosas! ✨`
-                              }
-                              sendWhatsAppMessage(apt.customerPhone, messages[apt.status] || '¡Hola!')
-                            }}
-                            className="text-xs bg-green-600 text-white px-3 py-1.5 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1 justify-center"
-                          >
-                            📱 WhatsApp
-                          </button>
+                          <div className="flex gap-2">
+                            {apt.status === 'confirmed' && <button onClick={() => updateAppointmentStatus(apt._id, 'completed')} className="text-[8px] font-black uppercase tracking-widest bg-fresia-rose text-white px-4 py-2 rounded-xl transition-all hover:shadow-lg">COMPLETAR</button>}
+                            <button onClick={() => handleRejectAppointment(apt._id)} className="text-[10px] p-2 bg-red-50 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all">✕</button>
+                          </div>
+                          <button onClick={() => sendWhatsAppMessage(apt.customerPhone, `Hola ${apt.customerName}!`)} className="text-[8px] font-black uppercase tracking-widest bg-green-500 text-white px-4 py-3 rounded-xl hover:bg-green-600 text-center">NOTIFICAR WA</button>
                         </div>
                       </td>
                     </tr>
