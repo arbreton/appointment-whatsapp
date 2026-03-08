@@ -46,7 +46,260 @@ export default function AdminDashboard({ admin, onLogout }) {
   const [showQuickActions, setShowQuickActions] = useState(false)
   const [customerSearch, setCustomerSearch] = useState('')
 
-  // ... (existing helper functions remain same)
+  // Helper functions
+  const fetchDayAppointments = async (date) => {
+    try {
+      const data = await appointmentApi.getByDate(date)
+      setDayAppointments(data || [])
+    } catch (err) {
+      console.error('Error fetching day appointments:', err)
+    }
+  }
+
+  const isSlotAvailable = (time) => {
+    if (!newAppointment.date) return true
+    const slotDate = new Date(`${newAppointment.date}T${time}:00`)
+    const slotTime = slotDate.getTime()
+    const DURATION_MS = APPOINTMENT_DURATION_MINS * 60 * 1000
+
+    return !dayAppointments.some(apt => {
+      const aptTime = new Date(apt.appointmentDate).getTime()
+      const isOverlap = Math.abs(slotTime - aptTime) < DURATION_MS
+      return isOverlap && apt.status !== 'cancelled' && apt.status !== 'rejected'
+    })
+  }
+
+  const availableSlots = TIME_SLOTS.filter(isSlotAvailable)
+
+  // Effects
+  useEffect(() => {
+    if (newAppointment.date) {
+      fetchDayAppointments(newAppointment.date)
+    }
+  }, [newAppointment.date])
+
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      try {
+        const customers = await customerApi.getAll()
+        setAllCustomers(customers || [])
+      } catch (err) {
+        console.error('Error fetching customers:', err)
+      }
+    }
+    fetchCustomers()
+  }, [])
+
+  const searchCustomers = (query, field) => {
+    if (!query || query.length < 1) {
+      setCustomerSuggestions([])
+      setShowSuggestions(false)
+      return
+    }
+
+    const lowerQuery = query.toLowerCase()
+    const suggestions = allCustomers.filter(c => {
+      if (field === 'phone') {
+        return c.phone && c.phone.includes(query)
+      } else {
+        return c.name && c.name.toLowerCase().includes(lowerQuery)
+      }
+    }).slice(0, 5)
+
+    setCustomerSuggestions(suggestions)
+    setShowSuggestions(suggestions.length > 0)
+  }
+
+  const getFilteredAppointments = () => {
+    if (filter === 'all') return appointments.filter(apt => apt.status !== 'cancelled')
+    if (filter === 'pending') {
+      return appointments.filter(apt =>
+        (apt.status === 'waitlist' || apt.status === 'confirmed') &&
+        apt.status !== 'cancelled' &&
+        apt.status !== 'completed'
+      )
+    }
+    return appointments.filter(apt => apt.status === filter)
+  }
+
+  const getAppointmentsByDate = () => {
+    const filtered = getFilteredAppointments()
+    const grouped = {}
+    filtered.forEach(apt => {
+      const date = new Date(apt.appointmentDate).toISOString().split('T')[0]
+      if (!grouped[date]) grouped[date] = []
+      grouped[date].push(apt)
+    })
+    Object.keys(grouped).forEach(date => {
+      grouped[date].sort((a, b) => new Date(a.appointmentDate) - new Date(b.appointmentDate))
+    })
+    return grouped
+  }
+
+  const selectCustomer = (customer) => {
+    setNewAppointment({ ...newAppointment, phone: customer.phone, name: customer.name })
+    setShowSuggestions(false)
+    setCustomerSuggestions([])
+  }
+
+  useEffect(() => {
+    const handleClickOutside = () => setShowSuggestions(false)
+    document.addEventListener('click', handleClickOutside)
+    return () => document.removeEventListener('click', handleClickOutside)
+  }, [])
+
+  useEffect(() => {
+    fetchAppointments()
+  }, [filter])
+
+  const fetchAppointments = async () => {
+    setLoading(true)
+    try {
+      const data = await appointmentApi.getAll(filter)
+      setAppointments(data || [])
+    } catch (err) {
+      console.error('Error fetching appointments:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleCreateCustomer = async () => {
+    if (!newCustomer.phone || !newCustomer.name) return
+    setCreatingCustomer(true)
+    try {
+      const customer = await customerApi.create(newCustomer.phone, newCustomer.name)
+      setCreatedCustomer(customer)
+      setNewCustomer({ phone: '', name: '' })
+      // Refresh customer list
+      const customers = await customerApi.getAll()
+      setAllCustomers(customers || [])
+      alert('¡Cliente registrado!')
+    } catch (err) {
+      console.error('Error creating customer:', err)
+    } finally {
+      setCreatingCustomer(false)
+    }
+  }
+
+  const updateAppointmentStatus = async (appointmentId, newStatus) => {
+    try {
+      await appointmentApi.update(appointmentId, { status: newStatus })
+      setAppointments(appointments.map(apt =>
+        apt._id === appointmentId ? { ...apt, status: newStatus } : apt
+      ))
+    } catch (err) {
+      console.error('Error updating appointment:', err)
+    }
+  }
+
+  const generateLoginLink = (phone) => {
+    const siteUrl = window.location.origin
+    const customer = allCustomers.find(c => c.phone === phone)
+    const pinParam = customer ? `&p=${customer.pin}` : ''
+    return `${siteUrl}/login?loginref=${encodeURIComponent(phone)}${pinParam}`
+  }
+
+  const generateBookingLink = async () => {
+    const siteUrl = window.location.origin
+    let customer = await customerApi.getByPhone(customerPhone)
+    if (!customer) {
+      const name = prompt('Cliente nuevo. Ingresa el nombre:')
+      if (!name) return
+      customer = await customerApi.create(customerPhone, name)
+    }
+    const link = `${siteUrl}/login?loginref=${encodeURIComponent(customerPhone)}&p=${customer.pin}&redirectTo=/book`
+    setWhatsappLink(link)
+  }
+
+  const sendWhatsAppMessage = (phone, message) => {
+    const cleanPhone = phone.replace(/\D/g, '')
+    const waLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`
+    window.open(waLink, '_blank')
+  }
+
+  const getStatusBadge = (status) => {
+    const styles = {
+      waitlist: 'bg-fresia-gold/10 text-fresia-gold',
+      confirmed: 'bg-green-50 text-green-700',
+      completed: 'bg-fresia-rose/10 text-fresia-rose',
+      cancelled: 'bg-red-50 text-red-600'
+    }
+    return styles[status] || 'bg-gray-100 text-gray-800'
+  }
+
+  const getStatusText = (status) => {
+    const texts = {
+      waitlist: 'Pendiente',
+      confirmed: 'Confirmado',
+      completed: 'Completado',
+      cancelled: 'Cancelado'
+    }
+    return texts[status] || status
+  }
+
+  const getPaymentText = (paymentStatus) => {
+    const texts = {
+      none: 'Pendiente',
+      partial: 'Depósito',
+      paid: 'Pagado',
+      pending_payment: 'Por pagar'
+    }
+    return texts[paymentStatus] || paymentStatus
+  }
+
+  const copyLink = (link) => {
+    navigator.clipboard.writeText(link)
+    alert('¡Enlace copiado!')
+  }
+
+  const updatePaymentType = async (appointmentId, paymentType) => {
+    try {
+      await appointmentApi.update(appointmentId, { paymentType })
+      setAppointments(appointments.map(apt =>
+        apt._id === appointmentId ? { ...apt, paymentType } : apt
+      ))
+    } catch (err) {
+      console.error('Error updating payment type:', err)
+    }
+  }
+
+  const handleCreateAppointment = async () => {
+    if (!newAppointment.phone || !newAppointment.name || !newAppointment.date || !newAppointment.time) {
+      alert('Completa todos los campos')
+      return
+    }
+    try {
+      let customer = await customerApi.getByPhone(newAppointment.phone)
+      if (!customer) {
+        customer = await customerApi.create(newAppointment.phone, newAppointment.name)
+      }
+      const appointmentDate = new Date(`${newAppointment.date}T${newAppointment.time}:00`).toISOString()
+      await appointmentApi.createFromAdmin(
+        newAppointment.phone,
+        newAppointment.name,
+        newAppointment.service,
+        appointmentDate,
+        newAppointment.amount
+      )
+      alert('¡Cita creada!')
+      setViewMode('calendar')
+      fetchAppointments()
+    } catch (err) {
+      console.error('Error:', err)
+      alert('Error al crear cita')
+    }
+  }
+
+  const handleRejectAppointment = async (appointmentId) => {
+    if (!confirm('¿Rechazar cita?')) return
+    try {
+      await appointmentApi.update(appointmentId, { status: 'cancelled' })
+      setAppointments(appointments.map(apt => apt._id === appointmentId ? { ...apt, status: 'cancelled' } : apt))
+    } catch (err) {
+      console.error('Error:', err)
+    }
+  }
 
   // Quick Actions Modal Component
   const QuickActionsModal = () => (
