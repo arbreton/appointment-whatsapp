@@ -133,20 +133,24 @@ export default function BookAppointment({ customer }) {
   return (
     <div className="min-h-screen bg-fresia-cream pb-20 selection:bg-fresia-rose/30">
       {/* Navigation */}
-      <nav className="p-6">
+      <nav className="p-6 sticky top-0 z-50 glass-morphism flex items-center justify-between">
         <Link
           to="/dashboard"
-          className="inline-flex items-center gap-2 text-fresia-dark/50 hover:text-fresia-rose transition-colors uppercase tracking-widest text-xs font-bold"
+          className="inline-flex items-center gap-2 text-fresia-dark/50 hover:text-fresia-rose transition-colors uppercase tracking-[0.2em] text-[10px] font-black"
         >
-          <span className="text-lg">←</span> Volver al Dashboard
+          <span className="text-lg">←</span> Dashboard
         </Link>
+        <div className="flex items-center gap-2">
+          <span className="text-xl">🌸</span>
+          <span className="font-serif text-sm font-bold tracking-tight text-fresia-dark uppercase">FRESIA</span>
+        </div>
       </nav>
 
-      <main className="max-w-4xl mx-auto px-6 animate-fade-in">
+      <main className="max-w-4xl mx-auto px-6 pt-12 animate-fade-in">
         <header className="text-center mb-12">
-          <span className="font-serif italic text-fresia-rose text-2xl mb-2 block">Reserva tu Experiencia</span>
-          <h1 className="text-4xl md:text-5xl font-serif text-fresia-dark">Nueva Cita</h1>
-          <div className="w-16 h-1 bg-fresia-gold mx-auto mt-6"></div>
+          <span className="font-serif italic text-fresia-rose text-xl sm:text-2xl mb-2 block">Reserva tu Experiencia</span>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif text-fresia-dark font-bold leading-tight">Agendar Nueva Cita</h1>
+          <div className="w-12 h-1 bg-fresia-gold mx-auto mt-6"></div>
         </header>
 
         <form onSubmit={handleSubmit} className="space-y-12">
@@ -160,8 +164,8 @@ export default function BookAppointment({ customer }) {
                   type="button"
                   onClick={() => handleServiceChange(service.id)}
                   className={`p-6 rounded-2xl border text-left transition-all duration-300 ${formData.serviceType === service.id
-                      ? 'bg-fresia-dark text-white border-fresia-dark shadow-xl scale-[1.02]'
-                      : 'bg-white border-fresia-gold/20 text-fresia-dark hover:border-fresia-rose'
+                    ? 'bg-fresia-dark text-white border-fresia-dark shadow-xl scale-[1.02]'
+                    : 'bg-white border-fresia-gold/20 text-fresia-dark hover:border-fresia-rose'
                     }`}
                 >
                   <div className={`text-2xl mb-4 ${formData.serviceType === service.id ? 'opacity-100' : 'opacity-50'}`}>
@@ -204,8 +208,8 @@ export default function BookAppointment({ customer }) {
                     type="button"
                     onClick={() => setFormData(prev => ({ ...prev, time }))}
                     className={`py-3 rounded-lg border text-sm font-medium transition-all ${formData.time === time
-                        ? 'bg-fresia-rose text-white border-fresia-rose shadow-md'
-                        : 'bg-white border-fresia-gold/10 text-fresia-dark hover:border-fresia-gold'
+                      ? 'bg-fresia-rose text-white border-fresia-rose shadow-md'
+                      : 'bg-white border-fresia-gold/10 text-fresia-dark hover:border-fresia-gold'
                       }`}
                   >
                     {time}
@@ -232,8 +236,8 @@ export default function BookAppointment({ customer }) {
                   type="button"
                   onClick={() => setFormData(prev => ({ ...prev, paymentType: opt.id }))}
                   className={`p-6 rounded-2xl border text-left transition-all ${formData.paymentType === opt.id
-                      ? 'bg-fresia-rose-light border-fresia-rose text-fresia-rose ring-2 ring-fresia-rose/20'
-                      : 'bg-white border-fresia-gold/10 text-fresia-dark hover:border-fresia-gold'
+                    ? 'bg-fresia-rose-light border-fresia-rose text-fresia-rose ring-2 ring-fresia-rose/20'
+                    : 'bg-white border-fresia-gold/10 text-fresia-dark hover:border-fresia-gold'
                     }`}
                 >
                   <div className="font-serif text-lg mb-1">{opt.label}</div>

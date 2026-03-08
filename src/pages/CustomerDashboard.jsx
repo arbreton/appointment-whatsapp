@@ -119,16 +119,114 @@ export default function CustomerDashboard({ customer, onLogout }) {
 
       <main className="max-w-4xl mx-auto px-6 pt-12 animate-fade-in">
         <div className="flex flex-col md:flex-row gap-8">
-          {/* Left Column: Profile & PIN */}
-          <aside className="md:w-1/3 space-y-6">
-            <div className="glass-card rounded-[32px] p-8">
-              <div className="w-20 h-20 rounded-full bg-fresia-rose-light flex items-center justify-center text-3xl mb-6 mx-auto border-4 border-white shadow-inner">
-                {customer.name.charAt(0)}
+          {/* Right Column (Appointments) - First on mobile */}
+          <section className="md:w-2/3 order-2 md:order-1">
+            <div className="flex justify-between items-end mb-8">
+              <div>
+                <h1 className="text-3xl md:text-4xl font-serif text-fresia-dark mb-2">Mis Citas</h1>
+                <div className="flex gap-6 border-b border-fresia-gold/10 pb-0 shadow-[0_1px_rgba(230,190,138,0.1)]">
+                  <button
+                    onClick={() => setActiveTab('active')}
+                    className={`pb-3 text-[10px] uppercase tracking-[0.3em] font-bold transition-all relative ${activeTab === 'active' ? 'text-fresia-dark' : 'text-fresia-dark/30 hover:text-fresia-dark/50'}`}
+                  >
+                    Próximas
+                    {activeTab === 'active' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-fresia-rose animate-fade-in"></div>}
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('past')}
+                    className={`pb-3 text-[10px] uppercase tracking-[0.3em] font-bold transition-all relative ${activeTab === 'past' ? 'text-fresia-dark' : 'text-fresia-dark/30 hover:text-fresia-dark/50'}`}
+                  >
+                    Historial
+                    {activeTab === 'past' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-fresia-rose animate-fade-in"></div>}
+                  </button>
+                </div>
               </div>
-              <h2 className="text-center font-serif text-2xl text-fresia-dark mb-1">{customer.name}</h2>
-              <p className="text-center text-[10px] uppercase tracking-[0.2em] text-fresia-dark/40 mb-8 font-bold">{customer.phone}</p>
+              <Link to="/book" className="btn-premium py-3 px-6 text-xs uppercase tracking-widest hidden sm:block">
+                Nueva Reserva
+              </Link>
+            </div>
 
-              <div className="pt-6 border-t border-fresia-gold/10">
+            {loading ? (
+              <div className="py-20 text-center">
+                <div className="w-10 h-10 border-2 border-fresia-gold border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              </div>
+            ) : getFilteredAppointments().length === 0 ? (
+              <div className="glass-card rounded-[40px] p-12 text-center border-dashed border-fresia-gold/30">
+                <span className="text-4xl block mb-6 opacity-30">💅</span>
+                <p className="text-fresia-dark/40 font-light italic mb-8 text-sm">No tienes citas programadas en esta sección.</p>
+                <Link to="/book" className="text-fresia-rose font-bold uppercase tracking-widest text-[10px] hover:tracking-[0.2em] transition-all">Explorar Servicios →</Link>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {getFilteredAppointments().map((apt) => (
+                  <div key={apt._id} className="group glass-card rounded-[32px] p-6 sm:p-8 hover:bg-white transition-all duration-500 overflow-hidden relative">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-fresia-rose-light/20 rounded-bl-full translate-x-12 -translate-y-12 transition-transform group-hover:translate-x-8 group-hover:-translate-y-8 pointer-events-none"></div>
+
+                    <div className="flex justify-between items-start relative z-10 mb-6">
+                      <div className="max-w-[70%]">
+                        <span className={`inline-block px-3 py-1 rounded-full text-[8px] uppercase tracking-[0.2em] font-bold mb-3 ${getStatusBadge(apt.status)}`}>
+                          {getStatusText(apt.status)}
+                        </span>
+                        <h3 className="text-xl sm:text-2xl font-serif text-fresia-dark mb-1 truncate">{apt.serviceType}</h3>
+                        <div className="flex items-center gap-2 text-fresia-dark/50 text-[10px] sm:text-xs font-light tracking-wide first-letter:uppercase">
+                          <span className="text-fresia-gold">✦</span> {formatDate(apt.appointmentDate)}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[8px] uppercase tracking-widest font-bold text-fresia-dark/30 mb-1">Monto</p>
+                        <p className="text-lg sm:text-xl font-serif text-fresia-dark">${apt.amount}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between border-t border-fresia-gold/10 pt-6">
+                      <div className="flex gap-4">
+                        {(apt.paymentStatus === 'partial' || apt.paymentStatus === 'pending_payment' || apt.paymentStatus === 'none') &&
+                          apt.status !== 'cancelled' && apt.status !== 'completed' && apt.status !== 'rejected' && (
+                            <Link
+                              to={`/appointment/${apt._id}`}
+                              className="bg-fresia-gold/10 text-fresia-dark font-bold text-[8px] uppercase tracking-widest py-2 px-4 sm:px-6 rounded-xl hover:bg-fresia-gold hover:text-white transition-all"
+                            >
+                              Pagar
+                            </Link>
+                          )}
+                        {apt.status !== 'cancelled' && apt.status !== 'completed' && (
+                          <button
+                            onClick={() => handleCancel(apt._id)}
+                            disabled={cancellingId === apt._id}
+                            className="text-fresia-dark/30 hover:text-red-500 font-bold text-[8px] uppercase tracking-widest py-2 transition-colors"
+                          >
+                            {cancellingId === apt._id ? 'Cancelando...' : 'Cancelar'}
+                          </button>
+                        )}
+                      </div>
+                      {apt.paymentStatus === 'paid' && (
+                        <span className="text-[7px] sm:text-[8px] uppercase tracking-[0.2em] font-black text-fresia-rose bg-fresia-rose/5 px-3 py-1 rounded-lg">Pago Completo ✓</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <Link to="/book" className="btn-premium w-full mt-10 text-center py-5 sm:hidden">
+              Nueva Reserva
+            </Link>
+          </section>
+
+          {/* Left Column (Profile) - Second on mobile */}
+          <aside className="md:w-1/3 space-y-6 order-1 md:order-2">
+            <div className="glass-card rounded-[32px] p-6 sm:p-8">
+              <div className="flex md:flex-col items-center gap-6 md:gap-0">
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-fresia-rose-light flex items-center justify-center text-2xl md:text-3xl border-4 border-white shadow-inner flex-shrink-0">
+                  {customer.name.charAt(0)}
+                </div>
+                <div className="md:text-center mt-0 md:mt-6">
+                  <h2 className="font-serif text-xl md:text-2xl text-fresia-dark mb-1">{customer.name}</h2>
+                  <p className="text-[8px] md:text-[10px] uppercase tracking-[0.2em] text-fresia-dark/40 font-bold">{customer.phone}</p>
+                </div>
+              </div>
+
+              <div className="pt-6 mt-6 border-t border-fresia-gold/10">
                 <div className="flex justify-between items-center mb-4">
                   <span className="text-[10px] uppercase tracking-widest font-bold text-fresia-dark/40">PIN de Acceso</span>
                   <span className="font-mono text-fresia-rose font-bold tracking-widest">{customer.pin}</span>
@@ -167,100 +265,6 @@ export default function CustomerDashboard({ customer, onLogout }) {
               <a href="https://wa.me/5216181234567" className="text-sm font-serif text-fresia-dark hover:text-fresia-rose transition-colors underline decoration-fresia-gold">Hablar con Recepción</a>
             </div>
           </aside>
-
-          {/* Right Column: Appointments */}
-          <section className="md:w-2/3">
-            <div className="flex justify-between items-end mb-8">
-              <div>
-                <h1 className="text-4xl font-serif text-fresia-dark mb-2">Mis Citas</h1>
-                <div className="flex gap-6 border-b border-fresia-gold/10 pb-0 shadow-[0_1px_rgba(230,190,138,0.1)]">
-                  <button
-                    onClick={() => setActiveTab('active')}
-                    className={`pb-3 text-[10px] uppercase tracking-[0.3em] font-bold transition-all relative ${activeTab === 'active' ? 'text-fresia-dark' : 'text-fresia-dark/30 hover:text-fresia-dark/50'}`}
-                  >
-                    Próximas
-                    {activeTab === 'active' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-fresia-rose animate-fade-in"></div>}
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('past')}
-                    className={`pb-3 text-[10px] uppercase tracking-[0.3em] font-bold transition-all relative ${activeTab === 'past' ? 'text-fresia-dark' : 'text-fresia-dark/30 hover:text-fresia-dark/50'}`}
-                  >
-                    Historial
-                    {activeTab === 'past' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-fresia-rose animate-fade-in"></div>}
-                  </button>
-                </div>
-              </div>
-              <Link to="/book" className="btn-premium py-3 px-6 text-xs uppercase tracking-widest hidden sm:block">
-                Nueva Reserva
-              </Link>
-            </div>
-
-            {loading ? (
-              <div className="py-20 text-center">
-                <div className="w-10 h-10 border-2 border-fresia-gold border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-              </div>
-            ) : getFilteredAppointments().length === 0 ? (
-              <div className="glass-card rounded-[40px] p-16 text-center border-dashed border-fresia-gold/30">
-                <span className="text-4xl block mb-6 opacity-30">💅</span>
-                <p className="text-fresia-dark/40 font-light italic mb-8">No tienes citas programadas en esta sección.</p>
-                <Link to="/book" className="text-fresia-rose font-bold uppercase tracking-widest text-xs hover:tracking-[0.2em] transition-all">Explorar Servicios →</Link>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {getFilteredAppointments().map((apt) => (
-                  <div key={apt._id} className="group glass-card rounded-[32px] p-8 hover:bg-white transition-all duration-500 overflow-hidden relative">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-fresia-rose-light/20 rounded-bl-full translate-x-12 -translate-y-12 transition-transform group-hover:translate-x-8 group-hover:-translate-y-8 pointer-events-none"></div>
-
-                    <div className="flex justify-between items-start relative z-10 mb-6">
-                      <div>
-                        <span className={`inline-block px-3 py-1 rounded-full text-[8px] uppercase tracking-[0.2em] font-bold mb-3 ${getStatusBadge(apt.status)}`}>
-                          {getStatusText(apt.status)}
-                        </span>
-                        <h3 className="text-2xl font-serif text-fresia-dark mb-1">{apt.serviceType}</h3>
-                        <div className="flex items-center gap-2 text-fresia-dark/50 text-xs font-light tracking-wide first-letter:uppercase">
-                          <span className="text-fresia-gold">✦</span> {formatDate(apt.appointmentDate)}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-[10px] uppercase tracking-widest font-bold text-fresia-dark/30 mb-1">Monto</p>
-                        <p className="text-xl font-serif text-fresia-dark">${apt.amount}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between border-t border-fresia-gold/10 pt-6">
-                      <div className="flex gap-4">
-                        {(apt.paymentStatus === 'partial' || apt.paymentStatus === 'pending_payment' || apt.paymentStatus === 'none') &&
-                          apt.status !== 'cancelled' && apt.status !== 'completed' && apt.status !== 'rejected' && (
-                            <Link
-                              to={`/appointment/${apt._id}`}
-                              className="bg-fresia-gold/10 text-fresia-dark font-bold text-[10px] uppercase tracking-widest py-2 px-6 rounded-xl hover:bg-fresia-gold hover:text-white transition-all"
-                            >
-                              Pagar
-                            </Link>
-                          )}
-                        {apt.status !== 'cancelled' && apt.status !== 'completed' && (
-                          <button
-                            onClick={() => handleCancel(apt._id)}
-                            disabled={cancellingId === apt._id}
-                            className="text-fresia-dark/30 hover:text-red-500 font-bold text-[10px] uppercase tracking-widest py-2 transition-colors"
-                          >
-                            {cancellingId === apt._id ? 'Cancelando...' : 'Cancelar Cita'}
-                          </button>
-                        )}
-                      </div>
-                      {apt.paymentStatus === 'paid' && (
-                        <span className="text-[8px] uppercase tracking-[0.2em] font-black text-fresia-rose bg-fresia-rose/5 px-3 py-1 rounded-lg">Pago Completo ✓</span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <Link to="/book" className="btn-premium w-full mt-10 text-center py-5 sm:hidden">
-              Nueva Reserva
-            </Link>
-          </section>
         </div>
       </main>
     </div>

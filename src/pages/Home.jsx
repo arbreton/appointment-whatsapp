@@ -1,22 +1,45 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { PRICES, SERVICE_TYPES } from '../constants'
 
 export default function Home() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+
   return (
     <div className="min-h-screen bg-fresia-cream overflow-x-hidden selection:bg-fresia-rose/30">
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center glass-morphism">
         <div className="flex items-center gap-2">
           <span className="text-2xl">🌸</span>
-          <span className="font-serif text-xl font-bold tracking-tight text-fresia-dark">FRESIA <span className="font-light text-fresia-rose">AESTHETIC</span></span>
+          <span className="font-serif text-xl font-bold tracking-tight text-fresia-dark uppercase">FRESIA <span className="font-light text-fresia-rose">AESTHETIC</span></span>
         </div>
-        <div className="hidden md:flex gap-8 text-sm font-medium uppercase tracking-widest text-fresia-dark/70">
+
+        {/* Desktop Links */}
+        <div className="hidden md:flex gap-8 text-[10px] font-black uppercase tracking-[0.3em] text-fresia-dark/70">
           <a href="#services" className="hover:text-fresia-rose transition-colors">Servicios</a>
           <a href="#contact" className="hover:text-fresia-rose transition-colors">Contacto</a>
         </div>
-        <Link to="/login" className="btn-premium py-2 px-6 text-sm">
-          Reservar
-        </Link>
+
+        <div className="flex items-center gap-4">
+          <Link to="/login" className="btn-premium py-2 px-6 text-[10px] uppercase tracking-widest hidden sm:block">
+            Reservar
+          </Link>
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="md:hidden text-fresia-dark p-2 text-2xl"
+          >
+            {isMenuOpen ? '✕' : '☰'}
+          </button>
+        </div>
+
+        {/* Mobile Menu Overlay */}
+        {isMenuOpen && (
+          <div className="fixed inset-0 top-[72px] bg-fresia-cream/95 backdrop-blur-xl z-[40] md:hidden flex flex-col items-center justify-center gap-12 animate-fade-in">
+            <a href="#services" onClick={() => setIsMenuOpen(false)} className="text-3xl font-serif text-fresia-dark hover:text-fresia-rose">Servicios</a>
+            <a href="#contact" onClick={() => setIsMenuOpen(false)} className="text-3xl font-serif text-fresia-dark hover:text-fresia-rose">Contacto</a>
+            <Link to="/login" onClick={() => setIsMenuOpen(false)} className="btn-premium py-4 px-12 text-sm">Reservar Cita</Link>
+          </div>
+        )}
       </nav>
 
       {/* Hero Section */}
@@ -31,11 +54,11 @@ export default function Home() {
         </div>
 
         <div className="relative z-10 text-center px-4 max-w-5xl animate-fade-in">
-          <span className="uppercase tracking-[0.3em] text-fresia-rose font-semibold mb-4 block text-sm">Experiencia de Lujo</span>
-          <h1 className="text-5xl md:text-8xl font-serif text-fresia-dark mb-6 leading-tight">
+          <span className="uppercase tracking-[0.3em] text-fresia-rose font-semibold mb-4 block text-[10px]">Experiencia de Lujo</span>
+          <h1 className="text-4xl sm:text-6xl md:text-8xl font-serif text-fresia-dark mb-6 leading-tight">
             Eleva tu <span className="italic">Belleza Natural</span>
           </h1>
-          <p className="text-lg md:text-xl text-fresia-dark/70 mb-10 max-w-2xl mx-auto font-light leading-relaxed">
+          <p className="text-base md:text-xl text-fresia-dark/70 mb-10 max-w-2xl mx-auto font-light leading-relaxed">
             Indulge en tratamientos estéticos de alta gama y lujo sin igual en el corazón de la ciudad.
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center">

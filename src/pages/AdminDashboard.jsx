@@ -42,6 +42,7 @@ export default function AdminDashboard({ admin, onLogout }) {
 
   // View mode
   const [viewMode, setViewMode] = useState('list')
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   // Helper functions
   const fetchDayAppointments = async (date) => {
@@ -407,41 +408,65 @@ export default function AdminDashboard({ admin, onLogout }) {
   }
 
   return (
-    <div className="min-h-screen bg-fresia-cream flex flex-col md:flex-row">
+    <div className="min-h-screen bg-fresia-cream flex flex-col md:flex-row relative">
+      {/* Mobile Header */}
+      <div className="md:hidden bg-fresia-dark p-6 flex justify-between items-center sticky top-0 z-50">
+        <div className="flex items-center gap-3">
+          <span className="text-xl">🌸</span>
+          <span className="font-serif text-lg font-bold tracking-[0.2em] uppercase text-fresia-cream">FRESIA</span>
+        </div>
+        <button onClick={() => setIsSidebarOpen(true)} className="text-fresia-gold text-2xl">☰</button>
+      </div>
+
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] md:hidden animate-fade-in"
+          onClick={() => setIsSidebarOpen(false)}
+        ></div>
+      )}
+
       {/* Premium Sidebar */}
-      <aside className="w-full md:w-64 bg-fresia-dark text-fresia-cream flex-shrink-0 sticky top-0 md:h-screen z-50">
-        <div className="p-8">
-          <div className="flex items-center gap-3 mb-12">
-            <span className="text-2xl">⚜️</span>
-            <span className="font-serif text-xl font-bold tracking-[0.2em] uppercase">FRESIA</span>
+      <aside className={`
+        fixed inset-y-0 left-0 w-80 bg-fresia-dark text-fresia-cream flex-shrink-0 z-[70] transition-transform duration-500 transform
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        md:translate-x-0 md:static md:w-64 md:h-screen sticky top-0
+      `}>
+        <div className="p-8 flex flex-col h-full">
+          <div className="flex justify-between items-start mb-12">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🌸</span>
+              <span className="font-serif text-xl font-bold tracking-[0.2em] uppercase">FRESIA</span>
+            </div>
+            <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-fresia-gold text-2xl">✕</button>
           </div>
 
           <nav className="space-y-4">
             <button
-              onClick={() => setViewMode('list')}
+              onClick={() => { setViewMode('list'); setIsSidebarOpen(false) }}
               className={`w-full flex items-center gap-4 p-4 rounded-2xl text-xs font-bold tracking-widest transition-all ${viewMode === 'list' ? 'bg-fresia-gold text-fresia-dark shadow-xl' : 'hover:bg-white/5 opacity-50 hover:opacity-100'}`}
             >
               <span>📋</span> GESTIÓN
             </button>
             <button
-              onClick={() => setViewMode('calendar')}
+              onClick={() => { setViewMode('calendar'); setIsSidebarOpen(false) }}
               className={`w-full flex items-center gap-4 p-4 rounded-2xl text-xs font-bold tracking-widest transition-all ${viewMode === 'calendar' ? 'bg-fresia-gold text-fresia-dark shadow-xl' : 'hover:bg-white/5 opacity-50 hover:opacity-100'}`}
             >
               <span>📅</span> CALENDARIO
             </button>
             <Link
               to="/admin/customers"
-              className="w-full flex items-center gap-4 p-4 rounded-2xl text-xs font-bold tracking-widest opacity-50 hover:opacity-100 hover:bg-white/5 transition-all"
+              className="w-full flex items-center gap-4 p-4 rounded-2xl text-xs font-bold tracking-widest opacity-50 hover:opacity-100 hover:bg-white/5 transition-all text-white"
             >
               <span>👥</span> CLIENTES
             </Link>
           </nav>
-        </div>
 
-        <div className="mt-auto p-8 border-t border-white/5">
-          <button onClick={onLogout} className="flex items-center gap-2 text-[10px] uppercase tracking-widest opacity-30 hover:opacity-100 transition-opacity">
-            <span>✕</span> Cerrar Sesión
-          </button>
+          <div className="mt-auto pt-8 border-t border-white/5">
+            <button onClick={onLogout} className="flex items-center gap-2 text-[10px] uppercase tracking-widest opacity-30 hover:opacity-100 transition-opacity">
+              <span>✕</span> Cerrar Sesión
+            </button>
+          </div>
         </div>
       </aside>
 
